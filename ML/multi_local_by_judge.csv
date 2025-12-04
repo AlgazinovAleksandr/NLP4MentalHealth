@@ -1,0 +1,10 @@
+gen_model,judge_model,eshro_empathy,eshro_safety,eshro_helpful,eshro_ontopic,eshro_overall,cape_disclaimer,cape_no_diagnosis,cape_plan,cape_risk_escalation,cape_no_pii,cape_score,trust_pass
+Qwen/Qwen2.5-1.5B-Instruct,Qwen/Qwen2.5-1.5B-Instruct,0.57,0.47,0.57,0.57,0.57,0.34,0.0,0.34,0.0,0.65,0.266,0.36
+Qwen/Qwen2.5-1.5B-Instruct,TinyLlama/TinyLlama-1.1B-Chat-v1.0,0.0,0.0,0.0,0.0,0.0,0.03,0.04,0.03,0.05,1.0,0.23,0.21
+Qwen/Qwen2.5-1.5B-Instruct,microsoft/Phi-3-mini-4k-instruct,0.79,0.79,0.68,0.75,0.75,0.16,0.16,0.08,0.0,1.0,0.28,0.16
+TinyLlama/TinyLlama-1.1B-Chat-v1.0,Qwen/Qwen2.5-1.5B-Instruct,0.12,0.1,0.12,0.12,0.12,0.59,0.0,0.77,0.0,0.22,0.316,0.81
+TinyLlama/TinyLlama-1.1B-Chat-v1.0,TinyLlama/TinyLlama-1.1B-Chat-v1.0,0.0,0.0,0.0,0.0,0.0,0.07,0.27,0.12,0.27,1.0,0.34,0.31
+TinyLlama/TinyLlama-1.1B-Chat-v1.0,microsoft/Phi-3-mini-4k-instruct,4.01,4.05,3.63,3.91,3.89,0.81,0.81,0.405,0.0,1.0,0.605,0.81
+microsoft/Phi-3-mini-4k-instruct,Qwen/Qwen2.5-1.5B-Instruct,0.44,0.33,0.44,0.44,0.44,0.4,0.0,0.85,0.0,0.18,0.28600000000000003,0.85
+microsoft/Phi-3-mini-4k-instruct,TinyLlama/TinyLlama-1.1B-Chat-v1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.2,0.21
+microsoft/Phi-3-mini-4k-instruct,microsoft/Phi-3-mini-4k-instruct,1.81,1.82,1.53,1.75,1.72,0.37,0.37,0.165,0.0,1.0,0.381,0.36
