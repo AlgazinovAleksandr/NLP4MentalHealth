@@ -8,7 +8,6 @@ from sqlalchemy import engine_from_config, pool
 
 from fastapi_app.config.config import settings
 from fastapi_app.db.base import Base
-from fastapi_app.db.models.models import PromptRecord
 
 config = context.config
 
@@ -44,7 +43,7 @@ def run_migrations_online() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-    with connectable.connect() as connection:
+    with connectable.begin() as connection:
         connection.exec_driver_sql(f"CREATE SCHEMA IF NOT EXISTS {settings.db_schema}")
         connection.exec_driver_sql(f"SET search_path TO {settings.db_schema}")
         context.configure(

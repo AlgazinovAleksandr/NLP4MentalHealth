@@ -7,7 +7,6 @@ from fastapi.responses import PlainTextResponse
 
 from fastapi_app.api.controller import router
 from fastapi_app.auth.security import require_admin
-from fastapi_app.db.db import init_db
 from fastapi_app.services.ml import model
 
 app = FastAPI(
@@ -25,7 +24,6 @@ def _validation_error(_request: Request, _exc: RequestValidationError):
 
 @app.on_event("startup")
 def _startup() -> None:
-    init_db()
     model.load()
 
 

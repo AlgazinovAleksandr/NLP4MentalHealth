@@ -26,7 +26,7 @@ class Settings:
         "DATABASE_URL",
         "postgresql+psycopg2://postgres:postgres@localhost:5432/postgres",
     ))
-    db_schema: str = field(default_factory=lambda: _env("APP_DB_SCHEMA", "mh"))
+    db_schema: str = field(default_factory=lambda: _env("APP_DB_SCHEMA", "fastapi_app"))
 
     repo_root: Path = field(default_factory=_repo_root)
     resources_dir: Path = field(default_factory=_resources_dir)

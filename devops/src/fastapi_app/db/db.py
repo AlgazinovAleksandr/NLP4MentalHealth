@@ -21,13 +21,6 @@ def _set_search_path(dbapi_connection, _connection_record) -> None:
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 
-def init_db() -> None:
-    from fastapi_app.db.base import Base
-    from fastapi_app.db.models import models
-
-    Base.metadata.create_all(bind=engine)
-
-
 def get_db() -> Generator[Session, Any, None]:
     db = SessionLocal()
     try:
