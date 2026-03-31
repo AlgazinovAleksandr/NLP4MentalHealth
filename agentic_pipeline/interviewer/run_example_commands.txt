@@ -1,0 +1,5 @@
+Run it:                                                                                                                                                          
+  cd agentic_pipeline                                                                                                                                            
+  python3 main.py                  # sample depression persona                                                                                                     
+  python3 main.py --persona 7      # anxiety/OCD persona from sample CSV                                                                                         
+  python3 main.py --max-questions 3
