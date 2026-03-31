@@ -1,0 +1,13 @@
+clinical_priority_diseases = [
+    "Generalized Anxiety Disorder",
+    "Major Depressive Disorder",
+    "Social Anxiety Disorder",
+    "Post-Traumatic Stress Disorder (PTSD)",
+    "Attention-Deficit/Hyperactivity Disorder (ADHD)",
+    "Schizophrenia",
+    "Panic Disorder",
+    "Obsessive-Compulsive Disorder (OCD)",
+    "Bipolar Disorder",
+"Adjustment Disorder",
+"Healthy (no mental problems)",
+]

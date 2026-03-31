@@ -1,0 +1,426 @@
+{
+  "id": "registration_questionnaire",
+  "version": "0.0.1",
+  "created_at": "2026-03-29",
+  "title": {
+    "ru": "Анкета первичного опроса",
+    "en": "Initial Registration Questionnaire"
+  },
+  "description": {
+    "ru": "Ответьте, пожалуйста, на несколько вопросов. Это поможет нам лучше понять ваш запрос и подобрать подходящий формат общения. Все данные анонимны и используются только для улучшения качества помощи.",
+    "en": "Please answer a few questions. This will help us better understand your needs and personalize the interaction. All data is anonymized and used solely to improve support quality."
+  },
+  "privacy_notice": {
+    "ru": "Ваши данные анонимизируются: имена, контакты и любые персональные идентификаторы удаляются перед обработкой.",
+    "en": "Your data is anonymized: names, contacts, and any personal identifiers are removed before processing."
+  },
+  "sections": [
+    {
+      "id": "section_demographics",
+      "order": 1,
+      "title": {
+        "ru": "Немного о вас",
+        "en": "About You"
+      },
+      "questions": [
+        {
+          "id": "q_gender",
+          "order": 1,
+          "type": "single_choice",
+          "is_pii": false,
+          "required": true,
+          "text": {
+            "ru": "Укажите ваш пол",
+            "en": "What is your gender?"
+          },
+          "options": [
+            { "code": "male",       "label": { "ru": "Мужской",                   "en": "Male" } },
+            { "code": "female",     "label": { "ru": "Женский",                    "en": "Female" } },
+            { "code": "prefer_not", "label": { "ru": "Предпочитаю не указывать",   "en": "Prefer not to say" } }
+          ]
+        },
+        {
+          "id": "q_age",
+          "order": 2,
+          "type": "number",
+          "is_pii": false,
+          "required": true,
+          "text": {
+            "ru": "Ваш возраст",
+            "en": "Your age"
+          },
+          "validation": {
+            "min": 13,
+            "max": 100,
+            "error_message": {
+              "ru": "Укажите возраст от 13 до 100 лет",
+              "en": "Please enter an age between 13 and 100"
+            }
+          }
+        },
+        {
+          "id": "q_occupation",
+          "order": 3,
+          "type": "single_choice",
+          "is_pii": false,
+          "required": true,
+          "text": {
+            "ru": "Ваш основной род занятий",
+            "en": "Your primary occupation"
+          },
+          "options": [
+            { "code": "student",    "label": { "ru": "Учащийся / студент",  "en": "Student" } },
+            { "code": "employed",   "label": { "ru": "Работаю",             "en": "Employed" } },
+            { "code": "unemployed", "label": { "ru": "Не работаю",          "en": "Unemployed" } },
+            { "code": "retired",    "label": { "ru": "Пенсионер",           "en": "Retired" } },
+            { "code": "other",      "label": { "ru": "Другое",              "en": "Other" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_primary_concern",
+      "order": 2,
+      "title": {
+        "ru": "Ваш запрос",
+        "en": "Your Concern"
+      },
+      "questions": [
+        {
+          "id": "q_has_mental_concern",
+          "order": 4,
+          "type": "single_choice",
+          "is_pii": false,
+          "required": true,
+          "text": {
+            "ru": "Как вы оцениваете своё психологическое состояние в последнее время?",
+            "en": "How would you describe your psychological state recently?"
+          },
+          "hint": {
+            "ru": "Нет правильного или неправильного ответа",
+            "en": "There is no right or wrong answer"
+          },
+          "options": [
+            {
+              "code": "fine",
+              "label": { "ru": "Всё в порядке, просто интересуюсь темой", "en": "I'm fine, just curious about the topic" },
+              "concern_score": 0
+            },
+            {
+              "code": "low_concern",
+              "label": { "ru": "Есть лёгкое беспокойство, но не уверен(а), стоит ли об этом думать", "en": "Some mild unease, not sure if it's worth thinking about" },
+              "concern_score": 1
+            },
+            {
+              "code": "moderate_concern",
+              "label": { "ru": "Замечаю изменения в настроении или поведении, которые меня беспокоят", "en": "I notice changes in mood or behavior that concern me" },
+              "concern_score": 2
+            },
+            {
+              "code": "strong_concern",
+              "label": { "ru": "Считаю, что у меня есть психологические трудности и мне нужна поддержка", "en": "I believe I have psychological difficulties and need support" },
+              "concern_score": 3
+            }
+          ]
+        },
+        {
+          "id": "q_concern_areas",
+          "order": 5,
+          "type": "multiple_choice",
+          "is_pii": false,
+          "required": false,
+          "display_if": {
+            "question_id": "q_has_mental_concern",
+            "answer_codes": ["low_concern", "moderate_concern", "strong_concern"]
+          },
+          "text": {
+            "ru": "Что именно вас беспокоит? (можно выбрать несколько)",
+            "en": "What specifically concerns you? (multiple answers allowed)"
+          },
+          "options": [
+            { "code": "anxiety",       "label": { "ru": "Тревога, беспокойство, страхи",          "en": "Anxiety, worry, fears" } },
+            { "code": "depression",    "label": { "ru": "Подавленность, депрессия, апатия",        "en": "Sadness, depression, apathy" } },
+            { "code": "sleep",         "label": { "ru": "Нарушения сна",                           "en": "Sleep disturbances" } },
+            { "code": "concentration", "label": { "ru": "Трудности с концентрацией / памятью",     "en": "Difficulty concentrating or memory issues" } },
+            { "code": "panic",         "label": { "ru": "Панические атаки",                        "en": "Panic attacks" } },
+            { "code": "ocd",           "label": { "ru": "Навязчивые мысли или действия",           "en": "Obsessive thoughts or compulsive behaviors" } },
+            { "code": "mood_swings",   "label": { "ru": "Резкие перепады настроения",              "en": "Intense mood swings" } },
+            { "code": "relationships", "label": { "ru": "Трудности в отношениях / общении",        "en": "Relationship or social difficulties" } },
+            { "code": "self_harm",     "label": { "ru": "Мысли о причинении вреда себе",           "en": "Thoughts of self-harm" },
+              "flag_urgent": true },
+            { "code": "other",         "label": { "ru": "Другое",                                  "en": "Other" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_screening",
+      "order": 3,
+      "title": {
+        "ru": "Ваше самочувствие за последние 2 недели",
+        "en": "How You've Been Feeling (Last 2 Weeks)"
+      },
+      "subtitle": {
+        "ru": "Эти вопросы помогают нам понять, насколько вам нужна поддержка. Основаны на международных клинических опросниках PHQ-2 и GAD-2.",
+        "en": "These questions help us understand the level of support you may need. Based on PHQ-2 and GAD-2 clinical screening tools."
+      },
+      "scale_labels": {
+        "0": { "ru": "Никогда",            "en": "Not at all" },
+        "1": { "ru": "Несколько дней",     "en": "Several days" },
+        "2": { "ru": "Больше половины дней","en": "More than half the days" },
+        "3": { "ru": "Почти каждый день",  "en": "Nearly every day" }
+      },
+      "questions": [
+        {
+          "id": "q_phq2_1",
+          "order": 6,
+          "type": "scale",
+          "scale_min": 0,
+          "scale_max": 3,
+          "is_pii": false,
+          "required": true,
+          "scoring_group": "phq2",
+          "text": {
+            "ru": "Как часто вы ощущали подавленность, депрессию или безнадёжность?",
+            "en": "How often have you been bothered by feeling down, depressed, or hopeless?"
+          }
+        },
+        {
+          "id": "q_phq2_2",
+          "order": 7,
+          "type": "scale",
+          "scale_min": 0,
+          "scale_max": 3,
+          "is_pii": false,
+          "required": true,
+          "scoring_group": "phq2",
+          "text": {
+            "ru": "Как часто вы испытывали мало интереса или радости от привычных занятий?",
+            "en": "How often have you had little interest or pleasure in doing things?"
+          }
+        },
+        {
+          "id": "q_gad2_1",
+          "order": 8,
+          "type": "scale",
+          "scale_min": 0,
+          "scale_max": 3,
+          "is_pii": false,
+          "required": true,
+          "scoring_group": "gad2",
+          "text": {
+            "ru": "Как часто вы ощущали нервозность, тревожность или напряжение?",
+            "en": "How often have you been feeling nervous, anxious, or on edge?"
+          }
+        },
+        {
+          "id": "q_gad2_2",
+          "order": 9,
+          "type": "scale",
+          "scale_min": 0,
+          "scale_max": 3,
+          "is_pii": false,
+          "required": true,
+          "scoring_group": "gad2",
+          "text": {
+            "ru": "Как часто вы не могли остановить или контролировать беспокойство?",
+            "en": "How often were you not able to stop or control worrying?"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section_functional_impact",
+      "order": 4,
+      "title": {
+        "ru": "Влияние на повседневную жизнь",
+        "en": "Impact on Daily Life"
+      },
+      "questions": [
+        {
+          "id": "q_daily_impact",
+          "order": 10,
+          "type": "single_choice",
+          "is_pii": false,
+          "required": true,
+          "text": {
+            "ru": "Насколько ваше эмоциональное состояние мешает вам в повседневной жизни?",
+            "en": "How much does your emotional state interfere with your daily life?"
+          },
+          "options": [
+            { "code": "not_at_all",  "label": { "ru": "Совсем не мешает",                      "en": "Not at all" },           "impact_score": 0 },
+            { "code": "slightly",    "label": { "ru": "Незначительно",                          "en": "Slightly" },             "impact_score": 1 },
+            { "code": "moderately",  "label": { "ru": "Умеренно — замечаю, но справляюсь",     "en": "Moderately — noticeable but manageable" }, "impact_score": 2 },
+            { "code": "significantly","label": { "ru": "Значительно — мешает работе/учёбе/отношениям", "en": "Significantly — affects work/study/relationships" }, "impact_score": 3 },
+            { "code": "severely",    "label": { "ru": "Сильно — с трудом справляюсь с базовыми задачами", "en": "Severely — struggling with basic tasks" }, "impact_score": 4 }
+          ]
+        },
+        {
+          "id": "q_duration",
+          "order": 11,
+          "type": "single_choice",
+          "is_pii": false,
+          "required": false,
+          "display_if": {
+            "question_id": "q_daily_impact",
+            "answer_codes": ["moderately", "significantly", "severely"]
+          },
+          "text": {
+            "ru": "Как долго вы замечаете эти ощущения?",
+            "en": "How long have you been experiencing these feelings?"
+          },
+          "options": [
+            { "code": "less_2w",   "label": { "ru": "Менее 2 недель",       "en": "Less than 2 weeks" } },
+            { "code": "2w_1m",     "label": { "ru": "От 2 недель до месяца","en": "2 weeks to 1 month" } },
+            { "code": "1m_6m",     "label": { "ru": "От 1 до 6 месяцев",    "en": "1 to 6 months" } },
+            { "code": "more_6m",   "label": { "ru": "Более 6 месяцев",      "en": "More than 6 months" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_help_history",
+      "order": 5,
+      "title": {
+        "ru": "История обращений за помощью",
+        "en": "Help-Seeking History"
+      },
+      "questions": [
+        {
+          "id": "q_prior_help",
+          "order": 12,
+          "type": "single_choice",
+          "is_pii": false,
+          "required": true,
+          "text": {
+            "ru": "Обращались ли вы раньше за психологической или психиатрической помощью?",
+            "en": "Have you previously sought psychological or psychiatric help?"
+          },
+          "options": [
+            { "code": "never",       "label": { "ru": "Никогда",                   "en": "Never" },              "concern_score": 0 },
+            { "code": "in_past",     "label": { "ru": "Обращался(ась) в прошлом",  "en": "In the past" },        "concern_score": 1 },
+            { "code": "currently",   "label": { "ru": "Сейчас прохожу терапию",    "en": "Currently in therapy" }, "concern_score": 1 },
+            { "code": "prefer_not",  "label": { "ru": "Предпочитаю не отвечать",   "en": "Prefer not to say" },  "concern_score": 0 }
+          ]
+        },
+        {
+          "id": "q_diagnosis_known",
+          "order": 13,
+          "type": "single_choice",
+          "is_pii": false,
+          "required": false,
+          "display_if": {
+            "question_id": "q_prior_help",
+            "answer_codes": ["in_past", "currently"]
+          },
+          "text": {
+            "ru": "Ставили ли вам официальный диагноз специалист?",
+            "en": "Have you been given an official diagnosis by a specialist?"
+          },
+          "options": [
+            { "code": "yes",        "label": { "ru": "Да",                         "en": "Yes" } },
+            { "code": "no",         "label": { "ru": "Нет",                        "en": "No" } },
+            { "code": "prefer_not", "label": { "ru": "Предпочитаю не отвечать",    "en": "Prefer not to say" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section_app_goal",
+      "order": 6,
+      "title": {
+        "ru": "Чего вы ожидаете от приложения?",
+        "en": "What Are You Looking For?"
+      },
+      "questions": [
+        {
+          "id": "q_app_goal",
+          "order": 14,
+          "type": "multiple_choice",
+          "is_pii": false,
+          "required": true,
+          "text": {
+            "ru": "Что вы хотите получить от общения с нашим ботом? (можно несколько)",
+            "en": "What do you hope to get from this application? (multiple answers allowed)"
+          },
+          "options": [
+            { "code": "understand_myself",  "label": { "ru": "Лучше понять своё состояние",       "en": "Better understand my mental state" } },
+            { "code": "vent",               "label": { "ru": "Выговориться / поделиться",          "en": "Vent or share my thoughts" } },
+            { "code": "coping_tips",        "label": { "ru": "Получить советы по управлению эмоциями", "en": "Get coping strategies" } },
+            { "code": "info",               "label": { "ru": "Получить информацию о расстройствах", "en": "Learn about mental health conditions" } },
+            { "code": "find_specialist",    "label": { "ru": "Найти специалиста / направление",    "en": "Find a specialist or referral" } },
+            { "code": "just_curious",       "label": { "ru": "Просто интересно / исследую",        "en": "Just curious / exploring" } }
+          ]
+        }
+      ]
+    }
+  ],
+  "scoring": {
+    "description": "Алгоритм расчёта флага relaxed / concerned на основе ответов анкеты",
+    "rules": [
+      {
+        "id": "rule_primary_concern",
+        "source_question": "q_has_mental_concern",
+        "description": "Прямая самооценка ментального состояния — главный сигнал",
+        "weight": 3,
+        "score_from": "option.concern_score"
+      },
+      {
+        "id": "rule_phq2",
+        "description": "PHQ-2 screening: сумма q_phq2_1 + q_phq2_2",
+        "scoring_group": "phq2",
+        "threshold_for_flag": 3,
+        "weight": 3,
+        "note": "При сумме ≥ 3 добавляется weight к общему счёту"
+      },
+      {
+        "id": "rule_gad2",
+        "description": "GAD-2 screening: сумма q_gad2_1 + q_gad2_2",
+        "scoring_group": "gad2",
+        "threshold_for_flag": 3,
+        "weight": 3,
+        "note": "При сумме ≥ 3 добавляется weight к общему счёту"
+      },
+      {
+        "id": "rule_functional_impact",
+        "source_question": "q_daily_impact",
+        "description": "Функциональный импакт на повседневную жизнь",
+        "weight": 1,
+        "score_from": "option.impact_score"
+      },
+      {
+        "id": "rule_prior_help",
+        "source_question": "q_prior_help",
+        "description": "История обращений за помощью",
+        "weight": 1,
+        "score_from": "option.concern_score"
+      },
+      {
+        "id": "rule_urgent_flag",
+        "source_question": "q_concern_areas",
+        "description": "Экстренный флаг при выборе self_harm",
+        "trigger": { "option_flag": "flag_urgent" },
+        "outcome": "urgent",
+        "overrides_flag": true,
+        "note": "При выборе 'мысли о причинении вреда себе' — немедленный переход к протоколу кризисной поддержки"
+      }
+    ],
+    "thresholds": {
+      "relaxed": { "max_score": 2,  "flag": "relaxed" },
+      "concerned": { "min_score": 3, "flag": "concerned" },
+      "urgent": { "flag": "urgent", "note": "Экстренный флаг имеет приоритет над всеми остальными" }
+    },
+    "flag_to_flow": {
+      "relaxed":  "Пользователю показывается информационный контент, чат-бот работает в режиме поддержки без бинарного классификатора",
+      "concerned": "Запускается сценарий бинарного классификатора: задаются уточняющие вопросы, формируется контекст для ML-пайплайна",
+      "urgent":   "Пользователю показывается кризисный контент и контакты экстренной психологической помощи"
+    }
+  },
+  "anonymization": {
+    "pii_fields": [],
+    "note": "В текущей версии анкеты явных PII-полей нет (имя/email не запрашиваются). При расширении анкеты поля с is_pii=true должны проходить через anonymization pipeline перед передачей в ML.",
+    "fields_to_generalize": [
+      { "question_id": "q_age", "method": "age_bucket", "buckets": ["13-17", "18-24", "25-34", "35-44", "45-54", "55+"] }
+    ]
+  }
+}

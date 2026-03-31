@@ -1,0 +1,169 @@
+You are a data generation assistant for a mental health support application.
+
+Your task is to generate realistic test questionnaire submissions for the initial registration
+questionnaire (version 0.0.1). Each submission represents one simulated user.
+
+---
+
+## QUESTIONNAIRE STRUCTURE
+
+The questionnaire has 6 sections and up to 14 questions. Some questions have display_if logic
+(skip logic) — they are only shown if a previous answer matches a condition.
+
+### SECTION 1 — Demographics (all required)
+
+q_gender [single_choice, required]
+  Options: male | female | prefer_not
+
+q_age [number, required]
+  Range: 13–100
+  Note: will be bucketed as: 13-17 / 18-24 / 25-34 / 35-44 / 45-54 / 55+
+
+q_occupation [single_choice, required]
+  Options: student | employed | unemployed | retired | other
+
+---
+
+### SECTION 2 — Primary Concern
+
+q_has_mental_concern [single_choice, required]
+  Options and concern_score:
+    fine             → concern_score: 0
+    low_concern      → concern_score: 1
+    moderate_concern → concern_score: 2
+    strong_concern   → concern_score: 3
+
+q_concern_areas [multiple_choice, optional]
+  display_if: q_has_mental_concern IN [low_concern, moderate_concern, strong_concern]
+  Options: anxiety | depression | sleep | concentration | panic | ocd | mood_swings
+           | relationships | self_harm (⚠ flag_urgent=true) | other
+
+---
+
+### SECTION 3 — Screening PHQ-2 & GAD-2 (all required, scale 0–3)
+
+  0 = Not at all / 1 = Several days / 2 = More than half the days / 3 = Nearly every day
+
+q_phq2_1 [scale 0–3, required]  → "How often felt down, depressed, or hopeless?"
+q_phq2_2 [scale 0–3, required]  → "How often had little interest or pleasure in doing things?"
+q_gad2_1 [scale 0–3, required]  → "How often felt nervous, anxious, or on edge?"
+q_gad2_2 [scale 0–3, required]  → "How often were you not able to stop or control worrying?"
+
+---
+
+### SECTION 4 — Functional Impact
+
+q_daily_impact [single_choice, required]
+  Options and impact_score:
+    not_at_all   → impact_score: 0
+    slightly     → impact_score: 1
+    moderately   → impact_score: 2
+    significantly→ impact_score: 3
+    severely     → impact_score: 4
+
+q_duration [single_choice, optional]
+  display_if: q_daily_impact IN [moderately, significantly, severely]
+  Options: less_2w | 2w_1m | 1m_6m | more_6m
+
+---
+
+### SECTION 5 — Help History
+
+q_prior_help [single_choice, required]
+  Options and concern_score:
+    never      → concern_score: 0
+    in_past    → concern_score: 1
+    currently  → concern_score: 1
+    prefer_not → concern_score: 0
+
+q_diagnosis_known [single_choice, optional]
+  display_if: q_prior_help IN [in_past, currently]
+  Options: yes | no | prefer_not
+
+---
+
+### SECTION 6 — App Goal
+
+q_app_goal [multiple_choice, required]
+  Options: understand_myself | vent | coping_tips | info | find_specialist | just_curious
+
+---
+
+## SCORING RULES
+
+total_score =
+  q_has_mental_concern.concern_score × 3
+  + (q_phq2_1 + q_phq2_2 >= 3 ? 3 : 0)
+  + (q_gad2_1 + q_gad2_2 >= 3 ? 3 : 0)
+  + q_daily_impact.impact_score × 1
+  + q_prior_help.concern_score × 1
+
+FLAGS:
+  urgent   → q_concern_areas contains "self_harm" (OVERRIDES all other flags)
+  relaxed  → total_score <= 2
+  concerned→ total_score >= 3
+
+---
+
+## TASK
+
+Generate exactly 15 realistic and diverse test questionnaire submissions.
+
+Distribution requirements:
+  - 4 submissions with flag = relaxed
+  - 7 submissions with flag = concerned
+  - 2 submissions with flag = urgent
+  - 2 edge-case submissions (borderline scores: total_score exactly 2 or 3)
+
+Mental health profile coverage (map to concerned/urgent submissions):
+  - 2 personas with depression profile (high PHQ-2, low GAD-2)
+  - 2 personas with anxiety/OCD profile (high GAD-2, concern_areas include anxiety or ocd)
+  - 2 personas with ADHD profile (concentration issues, daily impact)
+  - 1 persona with PTSD profile (mood_swings, relationships, sleep concerns)
+  - 1 persona with Asperger's/neurodivergent profile (social/relationships concerns)
+
+Demographic variety:
+  - Include at least: student, employed, unemployed
+  - Include at least: male, female, prefer_not
+  - Age spread across buckets: 13-17, 18-24, 25-34, 35-44, 55+
+
+Skip logic compliance:
+  - ONLY include q_concern_areas if q_has_mental_concern != "fine"
+  - ONLY include q_duration if q_daily_impact IN [moderately, significantly, severely]
+  - ONLY include q_diagnosis_known if q_prior_help IN [in_past, currently]
+  - Omit optional fields entirely (do not set them to null) when skip condition is not met
+
+---
+
+## OUTPUT FORMAT
+
+Return a JSON array of 15 objects. Each object must have:
+  - "persona_id": "test_001" … "test_015"
+  - "persona_description": short text (1–2 sentences) describing this simulated user
+  - "expected_flag": "relaxed" | "concerned" | "urgent"
+  - "expected_total_score": integer (calculated manually based on scoring rules above)
+  - "answers": object with question_id → answer value
+    - single_choice: string (option code)
+    - multiple_choice: array of strings (option codes)
+    - number: integer
+    - scale: integer (0–3)
+
+Example answer object:
+{
+  "q_gender": "female",
+  "q_age": 22,
+  "q_occupation": "student",
+  "q_has_mental_concern": "moderate_concern",
+  "q_concern_areas": ["anxiety", "sleep"],
+  "q_phq2_1": 2,
+  "q_phq2_2": 1,
+  "q_gad2_1": 2,
+  "q_gad2_2": 2,
+  "q_daily_impact": "moderately",
+  "q_duration": "1m_6m",
+  "q_prior_help": "never",
+  "q_app_goal": ["understand_myself", "coping_tips"]
+}
+
+After the JSON array, add a short validation table in markdown:
+| persona_id | expected_flag | expected_total_score | calculation_trace |
