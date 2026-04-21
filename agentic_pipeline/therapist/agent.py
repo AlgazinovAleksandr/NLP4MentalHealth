@@ -57,8 +57,15 @@ def run_therapist(system_prompt: str) -> None:
 
     # ── Get opening message ────────────────────────────────────────────────────
     print("Please wait...\n")
-    opening_response = llm.invoke(messages)
-    opening = opening_response.content.strip()
+    try:
+        opening_response = llm.invoke(messages)
+        opening = opening_response.content.strip()
+    except Exception as e:
+        opening = (
+            "Hello, I'm glad you're here. I'm having a small technical hiccup, "
+            "but I'm ready to listen. What's on your mind today?"
+        )
+        print(f"[Warning: could not reach the AI service — {type(e).__name__}. Using fallback opening.]\n")
 
     # Replace internal trigger with the AI reply so history stays clean
     messages.pop()  # remove HumanMessage([SESSION_START])
@@ -87,9 +94,14 @@ def run_therapist(system_prompt: str) -> None:
                 "Encourage them to return whenever they need support. "
                 "Do not ask any further questions."
             )
-            # Append as a system follow-up so the LLM treats it as an instruction
             closing_messages = messages + [SystemMessage(content=closing_instruction)]
-            closing = llm.invoke(closing_messages).content.strip()
+            try:
+                closing = llm.invoke(closing_messages).content.strip()
+            except Exception:
+                closing = (
+                    "Thank you so much for sharing today — it takes real courage. "
+                    "Take good care of yourself, and come back whenever you need support."
+                )
 
             print(f"\nTherapist: {closing}\n")
             print("=" * 62)
@@ -101,8 +113,17 @@ def run_therapist(system_prompt: str) -> None:
         messages.append(HumanMessage(content=user_input))
 
         print("\nTherapist is thinking...\n")
-        response = llm.invoke(messages)
-        reply = response.content.strip()
-        messages.append(AIMessage(content=reply))
+        try:
+            response = llm.invoke(messages)
+            reply = response.content.strip()
+            messages.append(AIMessage(content=reply))
+        except Exception as e:
+            # Remove the user message we just appended so history stays consistent
+            messages.pop()
+            print(
+                f"Therapist: I'm sorry, I had trouble connecting just now "
+                f"({type(e).__name__}). Could you try again in a moment?\n"
+            )
+            continue
 
         print(f"Therapist: {reply}\n")

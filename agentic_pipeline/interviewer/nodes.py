@@ -14,6 +14,7 @@ from .prompts import (
     INTERVIEWER_HUMAN,
     INTERVIEWER_SYSTEM,
 )
+from .schemas import DiagnosisOutput, InterviewerDecision
 from .state import InterviewState, QAPair
 
 _llm = get_llm()
@@ -103,10 +104,14 @@ def _parse_json(text: str) -> dict:
     return json.loads(text.strip())
 
 
-def _call_llm(system: str, human: str) -> dict:
+def _call_llm(system: str, human: str, schema=None) -> dict:
     messages = [SystemMessage(content=system), HumanMessage(content=human)]
     response = _llm.invoke(messages)
-    return _parse_json(response.content)
+    data = _parse_json(response.content)
+    if schema is not None:
+        # Validate against the Pydantic schema — raises ValidationError on bad LLM output
+        data = schema.model_validate(data).model_dump()
+    return data
 
 
 # ── Graph nodes ───────────────────────────────────────────────────────────────
@@ -142,7 +147,7 @@ def interviewer_node(state: InterviewState) -> dict:
         max_questions=max_q,
     )
 
-    result = _call_llm(system, human)
+    result = _call_llm(system, human, schema=InterviewerDecision)
     sufficient = bool(result.get("sufficient_information", False))
 
     return {
@@ -188,5 +193,5 @@ def diagnostician_node(state: InterviewState) -> dict:
         questionnaire_summary=_format_questionnaire(state["questionnaire"]),
         history_summary=_format_history(state["history"]),
     )
-    result = _call_llm(DIAGNOSTICIAN_SYSTEM, human)
+    result = _call_llm(DIAGNOSTICIAN_SYSTEM, human, schema=DiagnosisOutput)
     return {"diagnosis": result}

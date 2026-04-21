@@ -16,20 +16,24 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import sys
-import uuid
 from pathlib import Path
-from typing import Optional
 
-from langgraph.types import Command
-
-from interviewer.graph import app
-from interviewer.state import InterviewState
+from interviewer.runner import run_interview
 
 # ── Crisis content ────────────────────────────────────────────────────────────
+#
+# CRISIS_MESSAGE is shown immediately to any user whose registration questionnaire
+# flagged self-harm ideation (q_concern_areas contains "self_harm").
+# It is displayed BEFORE the internal assessment output and is the first thing the
+# user sees — so it must prioritise safety resources, not clinical information.
+#
+# TODO: Review this text with a qualified mental health professional before going live.
+# TODO: Localise crisis line numbers to the user's country/region — they vary widely.
 
 CRISIS_MESSAGE = """
-TODO
+Thank you for trusting us with something so personal. What you're feeling matters!
+If you are in crisis or feel you may hurt yourself, please reach out to people who will help you immediately.
+A real person is ready to listen. Reaching out is an act of courage.
 """
 
 # ── Sample questionnaires ─────────────────────────────────────────────────────
@@ -77,93 +81,6 @@ def load_persona(persona_index: int) -> dict:
     return json.loads(row["answers_json"])
 
 
-# ── Interrupt helpers ─────────────────────────────────────────────────────────
-
-def _get_pending_interrupt(config: dict) -> Optional[dict]:
-    """
-    Return the value from the first pending interrupt, or None if the graph finished.
-    Uses get_state() which works reliably across LangGraph versions.
-    """
-    snapshot = app.get_state(config)
-    if not snapshot.next:
-        return None  # graph completed
-    for task in snapshot.tasks:
-        interrupts = getattr(task, "interrupts", None) or []
-        if interrupts:
-            return interrupts[0].value
-    return None
-
-
-# ── Core interview runner ─────────────────────────────────────────────────────
-
-def run_interview(
-    questionnaire: dict,
-    max_questions: int = 5,
-    thread_id: Optional[str] = None,
-) -> dict:
-    """
-    Run the full interview pipeline for a given questionnaire.
-    Blocks on stdin for each follow-up question.
-    Returns the raw diagnosis dict from the diagnostician LLM.
-    """
-    thread_id = thread_id or str(uuid.uuid4())
-    config = {"configurable": {"thread_id": thread_id}}
-
-    initial_state: InterviewState = {
-        "questionnaire": questionnaire,
-        "history": [],
-        "n_asked": 0,
-        "max_questions": max_questions,
-        "current_question": None,
-        "current_topic": None,
-        "sufficient": False,
-        "is_urgent": False,
-        "diagnosis": None,
-    }
-
-    print("\n" + "=" * 62)
-    print("  MENTAL HEALTH INTAKE INTERVIEW")
-    print("=" * 62)
-    print("I'd like to ask you a few questions to better understand")
-    print("how you've been feeling. Take your time with each answer.")
-    print("Type 'quit' at any time to exit.\n")
-
-    # Kick off the graph (runs check_urgent + possibly first interviewer turn)
-    print("Please wait while the agent prepares your first question...")
-    app.invoke(initial_state, config)
-
-    while True:
-        interrupt_val = _get_pending_interrupt(config)
-
-        if interrupt_val is None:
-            # Graph finished — pull final state
-            snapshot = app.get_state(config)
-            return snapshot.values.get("diagnosis") or {}
-
-        question = interrupt_val["question"]
-        progress = interrupt_val.get("progress", "")
-
-        print(f"[{progress}] {question}")
-        try:
-            answer = input("You: ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print("\nSession ended.")
-            sys.exit(0)
-
-        if answer.lower() in {"quit", "exit", "q"}:
-            print("\nSession ended.")
-            sys.exit(0)
-
-        if not answer:
-            answer = "(no response)"
-
-        print(f"\nRecorded: \"{answer}\"")
-        print("Please wait...")
-
-        # Resume the graph with the user's answer
-        app.invoke(Command(resume=answer), config)
-
-
 # ── Display ───────────────────────────────────────────────────────────────────
 
 def display_diagnosis(diagnosis: dict, is_urgent: bool = False) -> None:
@@ -174,9 +91,7 @@ def display_diagnosis(diagnosis: dict, is_urgent: bool = False) -> None:
             _print_internal(diagnosis)
         return
 
-    print("\n" + "=" * 62)
-    print("  ASSESSMENT COMPLETE")
-    print("=" * 62)
+    print("ASSESSMENT COMPLETE")
 
     summary = diagnosis.get("user_facing_summary", "")
     if summary:

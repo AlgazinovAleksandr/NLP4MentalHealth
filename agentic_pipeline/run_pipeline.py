@@ -23,7 +23,8 @@ import json
 import sys
 from pathlib import Path
 
-from main import run_interview  # reuse the existing interview loop + display logic
+from interviewer.runner import run_interview
+from synthetic_questionnaire_generation import derive_flag
 from therapist import build_therapist_prompt, run_therapist
 
 # ── Placeholders ──────────────────────────────────────────────────────────────
@@ -56,33 +57,12 @@ def classify_with_bert(questionnaire: dict, model_path: str) -> str:
 def _fallback_classify(questionnaire: dict) -> str:
     """
     Rule-based fallback used when --skip-bert is set.
-    Mirrors the scoring logic in questionnaire_scoring.py.
+    Delegates to derive_flag() in questionnaire_scoring.py — single source of truth.
 
     Returns:
         "urgent" | "relaxed" | "concerned"
     """
-    concern_areas = questionnaire.get("q_concern_areas", [])
-    if "self_harm" in concern_areas:
-        return "urgent"
-
-    concern_level_score = {
-        "fine": 0, "low_concern": 1, "moderate_concern": 2, "strong_concern": 3,
-    }.get(questionnaire.get("q_has_mental_concern", "fine"), 0) * 3
-
-    phq2 = questionnaire.get("q_phq2_1", 0) + questionnaire.get("q_phq2_2", 0)
-    gad2 = questionnaire.get("q_gad2_1", 0) + questionnaire.get("q_gad2_2", 0)
-    phq_score = 3 if phq2 >= 3 else 0
-    gad_score = 3 if gad2 >= 3 else 0
-
-    daily_impact_score = {
-        "not_at_all": 0, "slightly": 1, "moderately": 2,
-        "significantly": 3, "severely": 4,
-    }.get(questionnaire.get("q_daily_impact", "not_at_all"), 0)
-
-    prior_help_score = 1 if questionnaire.get("q_prior_help") in {"in_past", "currently"} else 0
-
-    total = concern_level_score + phq_score + gad_score + daily_impact_score + prior_help_score
-    return "relaxed" if total <= 2 else "concerned"
+    return derive_flag(questionnaire)
 
 
 # ── Questionnaire loader ───────────────────────────────────────────────────────
