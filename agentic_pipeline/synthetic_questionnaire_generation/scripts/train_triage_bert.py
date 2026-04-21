@@ -40,6 +40,8 @@ def _eval_metric_key(metric: str) -> str:
     m = metric.strip().lower()
     if m == "f1_macro":
         return "eval_f1_macro"
+    if m == "f1_weighted":
+        return "eval_f1_weighted"
     if m == "f1_urgent":
         return "eval_f1_urgent"
     if m == "recall_urgent":
@@ -140,16 +142,24 @@ def main() -> None:
         "--metric_for_best_model",
         type=str,
         default="f1_macro",
-        choices=("f1_macro", "f1_urgent", "recall_urgent", "combined_urgent"),
-        help="Checkpoint selection on val. ``combined_urgent`` = 0.65*recall_urgent + 0.35*f1_macro "
-        "(favors catching true urgent).",
+        choices=(
+            "f1_macro",
+            "f1_weighted",
+            "f1_urgent",
+            "recall_urgent",
+            "combined_urgent",
+        ),
+        help="Val checkpoint selection. Use ``f1_macro`` or ``f1_weighted`` for neutral training (no urgent-recall "
+        "bias). ``combined_urgent`` / ``recall_urgent`` / ``f1_urgent`` prioritize catching ``urgent``.",
     )
     p.add_argument(
         "--class_weight_mode",
         type=str,
         default="none",
         choices=("none", "balanced"),
-        help="``balanced`` = inverse-frequency CE weights on train labels (often raises urgent recall).",
+        help="``none`` = no class weights (recommended with f1_macro to avoid over-predicting urgent). "
+        "``balanced`` = inverse-frequency CE weights (often inflates urgent recall; pair with "
+        "``--urgent_weight_mult`` < 1.0 only if you must use balanced but want to temper urgent).",
     )
     p.add_argument(
         "--urgent_weight_mult",
@@ -248,6 +258,9 @@ def main() -> None:
         out = {
             "accuracy": float(accuracy_score(lab, pred)),
             "f1_macro": float(f1_score(lab, pred, average="macro", zero_division=0)),
+            "f1_weighted": float(
+                f1_score(lab, pred, average="weighted", zero_division=0)
+            ),
         }
         f1_each = f1_score(
             lab, pred, average=None, labels=[0, 1, 2], zero_division=0

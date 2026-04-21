@@ -1,0 +1,11 @@
+# Backend (BERT)
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+torch>=2.0.0
+transformers>=4.36.0
+
+# UI + chat
+streamlit>=1.32.0
+httpx>=0.27.0
+sqlalchemy>=2.0.0

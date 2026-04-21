@@ -44,18 +44,24 @@ python3 scripts/bert_triage_text.py data/dataset/synthetic_triagem_n1000.jsonl
 
 ### 3. Обучение
 
+**Нейтрально (без перекоса в recall `urgent`):** чекпоинт по **`f1_macro`**, без весов классов — разумный дефолт для продукта.
+
 ```bash
 python3 scripts/train_triage_bert.py \
   --csv data/dataset/synthetic_triagem_n1000_bert.csv \
-  --output_dir runs/triage_bert_run1
+  --output_dir runs/triage_bert_neutral \
+  --metric_for_best_model f1_macro \
+  --class_weight_mode none
 ```
 
-Для упора на recall по **`urgent`**: `--metric_for_best_model combined_urgent`, `--class_weight_mode balanced`, `--urgent_weight_mult` — см. `scripts/train_triage_bert.py --help`.
+Альтернатива: **`--metric_for_best_model f1_weighted`** (F1 с весами по поддержке классов).
+
+**Если нужен упор на поимку `urgent`** (часто раздувает ложные urgent): `--metric_for_best_model combined_urgent`, `--class_weight_mode balanced`, `--urgent_weight_mult` — см. `scripts/train_triage_bert.py --help`. Текущий **`runs/triage_bert_run1`** как раз с таким перекосом (`combined_urgent` + `balanced` + `urgent_weight_mult=1.3`).
 
 ### 4. Инференс
 
 ```bash
-python3 scripts/predict_triage_bert.py --model runs/triage_bert_run1/best_model
+python3 scripts/predict_triage_bert.py --model runs/triage_bert_neutral/best_model
 ```
 
 ### 5. Smoke-тест комбинированного триажа (без сети)
