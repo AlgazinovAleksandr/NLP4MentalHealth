@@ -1,5 +1,6 @@
 langgraph>=0.2.55
 langchain>=0.3.0
 langchain-openai>=0.2.0
+openai>=1.40.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0

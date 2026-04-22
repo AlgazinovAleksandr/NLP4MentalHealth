@@ -5,6 +5,23 @@ questionnaire (version 0.0.1). Each submission represents one simulated user.
 
 ---
 
+## ROUTING LABELS (exactly three values for expected_flag)
+
+Downstream routing uses only these three labels, derived from answers:
+
+- **urgent** — if `q_concern_areas` contains `"self_harm"` (overrides score-based flags).
+- **relaxed** — if not urgent and `total_score <= 2`.
+- **concerned** — if not urgent and `total_score >= 3`.
+
+There is **no fourth routing class**. Do not use `"edge_case"` or any other string for `expected_flag`.
+
+**near_threshold** (boolean, optional but recommended) marks rows that sit on the **score boundary**
+between relaxed and concerned: set `near_threshold: true` only when `expected_flag` is `relaxed` or
+`concerned` **and** `expected_total_score` is **2 or 3** (i.e. highest relaxed scores or lowest concerned scores).
+For `urgent`, always set `near_threshold: false` (or omit the field).
+
+---
+
 ## QUESTIONNAIRE STRUCTURE
 
 The questionnaire has 6 sections and up to 14 questions. Some questions have display_if logic
@@ -107,30 +124,93 @@ FLAGS:
 
 ## TASK
 
-Generate exactly 15 realistic and diverse test questionnaire submissions.
+Generate exactly 15 realistic and **diverse** test questionnaire submissions.
 
-Distribution requirements:
-  - 4 submissions with flag = relaxed
-  - 7 submissions with flag = concerned
-  - 2 submissions with flag = urgent
-  - 2 edge-case submissions (borderline scores: total_score exactly 2 or 3)
+Distribution requirements (counts sum to 15; each row has exactly one `expected_flag`):
 
-Mental health profile coverage (map to concerned/urgent submissions):
+  - **4** with `expected_flag` = `relaxed`
+  - **7** with `expected_flag` = `concerned`
+  - **2** with `expected_flag` = `urgent` (must include `"self_harm"` in `q_concern_areas`)
+  - Among the 15 rows, **2** must be **score-boundary** cases: `expected_total_score` is **exactly 2 or 3**,
+    with `expected_flag` `relaxed` (score 2) or `concerned` (score 3). Mark both with `near_threshold: true`.
+    These 2 rows are **included** in the relaxed/concerned counts above, not extra rows.
+
+Mental health profile coverage (spread across concerned / urgent where applicable):
+
   - 2 personas with depression profile (high PHQ-2, low GAD-2)
   - 2 personas with anxiety/OCD profile (high GAD-2, concern_areas include anxiety or ocd)
   - 2 personas with ADHD profile (concentration issues, daily impact)
   - 1 persona with PTSD profile (mood_swings, relationships, sleep concerns)
   - 1 persona with Asperger's/neurodivergent profile (social/relationships concerns)
 
+**Corner-case and contradiction coverage** (at least one row each; still obey skip logic):
+
+  - **Subjective vs objective:** `q_has_mental_concern` = `fine` but PHQ-2 sum ≥ 3 (so `expected_flag` becomes `concerned` from score). In prose, show **denial or busyness only** — do **not** mention PHQ,
+    GAD, scores, "the questionnaire", or "I said fine but my scores…" (that leaks the rubric into
+    `persona_description`).
+  - **Downplayed impact:** `strong_concern` or `moderate_concern` but PHQ/GAD sums stay below 3 and `q_daily_impact` is `not_at_all` or `slightly` — plausible minimization.
+  - **Help history without disclosure:** `q_prior_help` = `prefer_not` (no `q_diagnosis_known`).
+  - **Urgent with mild scales:** `urgent` with relatively low PHQ/GAD totals is allowed because `self_harm` overrides; still keep answers coherent.
+
+**Hard minimums per 15-row batch (in addition to bullets above):**
+
+  - At least **2** rows with `near_threshold: true` (scores **2** or **3**).
+  - At least **2** rows with `q_duration` present, using **different** `q_duration` codes.
+  - Across rows with `q_prior_help` ∈ {`in_past`, `currently`}, include `q_diagnosis_known` values
+    **`yes`**, **`no`**, and **`prefer_not`** at least once each (spread across different rows).
+  - Do **not** reuse the same `q_concern_areas` multiset more than **twice** in the batch (avoid
+    repeating anxiety+sleep+concentration as the default pack).
+
+**Anti-"I'll keep it short" clichés for `persona_description`:** In the whole batch, **at most one**
+row may contain any of: "briefly", "keep it short", "I'll keep this brief", "sorry for the long
+message", "not sure where to start". Prefer **zero** — short messages should still use **different**
+openings (no two rows sharing the same first four words).
+
+**Rubric leak bans for `persona_description`:** Never mention PHQ, GAD, screening, "my scores",
+  question ids, or meta lines that explain a corner case to a grader. At most **one** row per batch
+  may use a clinical acronym self-label (PMDD, ADHD, PTSD, etc.); others use plain language.
+
+**Anti-template rules for persona_description:**
+
+  - Do **not** reuse the same opening pattern (e.g. "A NN-year-old student who feels fine but is curious…") more than once per 15-row batch.
+  - Vary life context (shift work, caregiving, migration stress, chronic pain, academic pressure, job loss) beyond generic "stressed student / anxious employee".
+  - Avoid naming the routing flag in the prose (do not write "relaxed", "concerned", "urgent" in `persona_description`).
+
+**High-noise / messy `persona_description` (mandatory mix — simulates real sign-ups):**
+
+  - In **every** batch, target **about 30%** of rows with **weird or uninformative** `persona_description` text: the structured `answers` must stay valid and consistent with scoring, but the free-text field must **not** read like a neat clinical intake summary.
+  - Allowed (use several different styles across the batch):
+    - **Empty string** `""` for `persona_description` (valid JSON).
+    - **Very long** rambling text (several paragraphs or 500–1500+ tokens): off-topic tangents, recipe fragments, gaming chat, political rant, copypasta — interleaved with or instead of coherent self-description.
+    - **Emoji-only** or emoji-heavy lines (minimal or no letters).
+    - **Non-Latin scripts** (e.g. Chinese/Japanese/Korean, Arabic, Cyrillic-only) with or without mixed Latin; may be unrelated poetry, lyrics, or random keyboard mashing in another script.
+    - **Typos / ALL CAPS / no punctuation** / SMS fragments / single word ("idk", "test", "привет", "???").
+    - **Deliberately irrelevant** to the questionnaire (job listing, changelog, base64-looking gibberish).
+  - For these noisy rows: **do not** mirror PHQ-2 / GAD-2 item wording in prose (avoid "little interest or pleasure", "feeling nervous" as quotes from the form). The scales still appear only inside `answers`, not as a paraphrase checklist in `persona_description`.
+  - The remaining **~70%** may use conventional short prose, but still vary length, voice, and opener (not all "A NN-year-old…").
+
+**"Empty" / mundane cases (must be mixed with clinical ones):**
+
+  - In **each** 15-row batch, include **at least 5** personas whose `persona_description` contains **none** of:
+    depression, depressed, anxiety, anxious, PTSD, trauma, OCD, bipolar, therapy, therapist, psychiatrist,
+    mental health, disorder, suicidal, self-harm (except rows that are actually `urgent`, where context may require care — still avoid copy-paste wording).
+  - For several **relaxed** rows: near-zero PHQ/GAD, `q_has_mental_concern` = `fine`, mundane hooks: app ad, friend suggestion, idle curiosity, waiting-room boredom, "wanted to see what this is", trip planning — **no** therapy storyline in the prose.
+  - For **concerned**, do not reduce everything to the word "depression": allow sleep debt after night shifts, workplace conflict, caregiver overload, grief without medical labels, chronic pain, burnout without self-diagnosis jargon.
+  - Vary openings: in a 15-row batch, start with the "A/An NN-year-old …" template **at most twice**; use impersonal leads ("Between jobs and…", "Mostly here because…", "Clicked through from…"), age mid-sentence, or anchor on occupation only.
+
+**Profile coverage (depression / anxiety / ADHD, etc.):** those bullets describe diversity **across a long generation run**, not every single batch of 15; within one batch, prioritize **tone variety and mundane motives** over repeating one clinical template.
+
 Demographic variety:
+
   - Include at least: student, employed, unemployed
   - Include at least: male, female, prefer_not
   - Age spread across buckets: 13-17, 18-24, 25-34, 35-44, 55+
 
 Skip logic compliance:
-  - ONLY include q_concern_areas if q_has_mental_concern != "fine"
-  - ONLY include q_duration if q_daily_impact IN [moderately, significantly, severely]
-  - ONLY include q_diagnosis_known if q_prior_help IN [in_past, currently]
+
+  - When `q_has_mental_concern` is `low_concern`, `moderate_concern`, or `strong_concern`, always include **`q_concern_areas`** as a non-empty array (required in that branch for realistic submissions).
+  - ONLY include `q_duration` if `q_daily_impact` IN [moderately, significantly, severely]
+  - ONLY include `q_diagnosis_known` if `q_prior_help` IN [in_past, currently]
   - Omit optional fields entirely (do not set them to null) when skip condition is not met
 
 ---
@@ -138,32 +218,27 @@ Skip logic compliance:
 ## OUTPUT FORMAT
 
 Return a JSON array of 15 objects. Each object must have:
-  - "persona_id": "test_001" … "test_015"
-  - "persona_description": short text (1–2 sentences) describing this simulated user
-  - "expected_flag": "relaxed" | "concerned" | "urgent"
-  - "expected_total_score": integer (calculated manually based on scoring rules above)
-  - "answers": object with question_id → answer value
-    - single_choice: string (option code)
-    - multiple_choice: array of strings (option codes)
-    - number: integer
-    - scale: integer (0–3)
 
-Example answer object:
+  - `persona_id`: `"test_001"` … `"test_015"`
+  - `persona_description`: any JSON string (may be empty, very long, emoji-only, non-Latin, or noisy — see **High-noise / messy** rules); it does **not** need to justify every answer field
+  - `expected_flag`: **only** `"relaxed"` | `"concerned"` | `"urgent"` (must match scoring rules applied to `answers`)
+  - `expected_total_score`: integer (must equal the formula applied to `answers`)
+  - `near_threshold`: boolean — `true` iff `expected_flag` is `relaxed` or `concerned` **and** `expected_total_score` ∈ {2, 3}; otherwise `false` or omit
+  - `answers`: object with question_id → value (single_choice string, multiple_choice string array, number int, scale 0–3 int)
+
+Example object (truncated):
+
+```json
 {
-  "q_gender": "female",
-  "q_age": 22,
-  "q_occupation": "student",
-  "q_has_mental_concern": "moderate_concern",
-  "q_concern_areas": ["anxiety", "sleep"],
-  "q_phq2_1": 2,
-  "q_phq2_2": 1,
-  "q_gad2_1": 2,
-  "q_gad2_2": 2,
-  "q_daily_impact": "moderately",
-  "q_duration": "1m_6m",
-  "q_prior_help": "never",
-  "q_app_goal": ["understand_myself", "coping_tips"]
+  "persona_id": "test_001",
+  "persona_description": "…",
+  "expected_flag": "concerned",
+  "expected_total_score": 3,
+  "near_threshold": true,
+  "answers": { }
 }
+```
 
 After the JSON array, add a short validation table in markdown:
-| persona_id | expected_flag | expected_total_score | calculation_trace |
+
+| persona_id | expected_flag | expected_total_score | near_threshold | calculation_trace |

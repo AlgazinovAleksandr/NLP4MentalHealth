@@ -1,0 +1,8 @@
+# pip install -r requirements_train.txt  (for train_triage_bert.py)
+torch>=2.0.0
+transformers>=4.36.0
+datasets>=2.16.0
+accelerate>=0.26.0
+evaluate>=0.4.0
+scikit-learn>=1.3.0
+pandas>=2.0.0

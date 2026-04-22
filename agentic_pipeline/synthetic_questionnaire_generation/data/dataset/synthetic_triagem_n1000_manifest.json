@@ -1,0 +1,47 @@
+{
+  "dataset_target_n_requested": 1000,
+  "dataset_effective_n": 1000,
+  "label_caps": {
+    "relaxed": 600,
+    "concerned": 300,
+    "urgent": 100
+  },
+  "models": [
+    "google/gemini-2.0-flash-001",
+    "qwen/qwen-2.5-72b-instruct",
+    "openai/gpt-4o-mini"
+  ],
+  "status": "complete",
+  "saved_at_utc": "2026-04-20T22:44:25.782053+00:00",
+  "collected_total": 1000,
+  "per_model_counts": {
+    "google/gemini-2.0-flash-001": 85,
+    "qwen/qwen-2.5-72b-instruct": 498,
+    "openai/gpt-4o-mini": 417
+  },
+  "label_counts": {
+    "relaxed": 600,
+    "concerned": 300,
+    "urgent": 100
+  },
+  "skipped_invalid": 293,
+  "skipped_duplicate": 117,
+  "skipped_label_full": 244,
+  "prompt_file": "english_psych_user_message_dataset_prompt.txt",
+  "dedupe_mode": "answers_and_message",
+  "label_mode": "joint",
+  "batches_per_model": {
+    "google/gemini-2.0-flash-001": 9,
+    "qwen/qwen-2.5-72b-instruct": 52,
+    "openai/gpt-4o-mini": 51
+  },
+  "batch_max": 15,
+  "temperature": 0.35,
+  "max_tokens_per_request": 24576,
+  "auto_resumed_from_file": false,
+  "fresh_start": true,
+  "jsonl": "data/dataset/synthetic_triagem_n1000.jsonl",
+  "csv": "data/dataset/synthetic_triagem_n1000.csv",
+  "last_save_note": "finished",
+  "canonical_dataset_rows": 1141
+}

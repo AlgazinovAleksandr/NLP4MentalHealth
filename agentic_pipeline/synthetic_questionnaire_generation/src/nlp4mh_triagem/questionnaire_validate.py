@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from questionnaire_scoring import compute_total_score, derive_flag
+from .questionnaire_scoring import compute_total_score, derive_flag
 
 GENDER = {"male", "female", "prefer_not"}
 OCCUPATION = {"student", "employed", "unemployed", "retired", "other"}
@@ -169,9 +169,6 @@ def validate_row(
     *,
     check_expected: bool = True,
 ) -> ValidationResult:
-    """
-    row: persona dict with 'answers' and optionally expected_flag / expected_total_score.
-    """
     base = validate_answers(row["answers"])
     if not base.ok:
         return base
@@ -200,10 +197,6 @@ def validate_row(
 
 
 def metric_matches_for_row(row: dict[str, Any]) -> tuple[bool | None, bool | None]:
-    """
-    For rows with schema-valid answers: whether stated expected_total_score / expected_flag
-    match recomputation. Returns (None, None) if answers are not schema-valid.
-    """
     ans = row.get("answers")
     if not isinstance(ans, dict):
         return None, None
