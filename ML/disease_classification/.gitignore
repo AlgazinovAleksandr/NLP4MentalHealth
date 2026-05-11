@@ -1,0 +1,3 @@
+# Model weights — keep folder structure via .gitkeep
+bert_mental_health_model/**
+!bert_mental_health_model/.gitkeep
