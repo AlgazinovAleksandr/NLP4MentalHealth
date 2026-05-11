@@ -12,7 +12,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 from db_log import log_chat_turn, log_triage_session
-from pipeline_chat import run_pipeline
+from interview_runner import build_system_prompt, resume_interview, start_interview
+from pipeline_chat import generate_opening, run_pipeline
 from questionnaire_form import (
     gather_answers,
     iter_questions,
@@ -163,6 +164,10 @@ def main() -> None:
         st.session_state.triage_free_text = ""
     if "log_db_session_id" not in st.session_state:
         st.session_state.log_db_session_id = None
+    if "interview_config" not in st.session_state:
+        st.session_state.interview_config = None
+    if "interview_messages" not in st.session_state:
+        st.session_state.interview_messages = []
 
     st.sidebar.markdown("**Settings / Настройки**")
     lang = st.sidebar.selectbox(
@@ -249,8 +254,69 @@ def main() -> None:
             st.session_state.triage_label = routing_label
             st.session_state.triage_ranked = ranked
             st.session_state.messages = []
+            st.session_state.interview_config = None
+            st.session_state.interview_messages = []
+            st.session_state.stage = "interview"
+            st.rerun()
+
+    elif st.session_state.stage == "interview":
+        ranked = st.session_state.triage_ranked or []
+        _sidebar_probs(ranked, lang)
+
+        st.markdown(f"## {'Интервью' if lang == 'ru' else 'Intake interview'}")
+
+        def finish_interview(diagnosis: dict) -> None:
+            with st.spinner(
+                "Подготовка сессии..." if lang == "ru" else "Preparing your session..."
+            ):
+                system_prompt = build_system_prompt(
+                    bert_class=st.session_state.triage_label,
+                    interview_result=diagnosis,
+                    questionnaire=st.session_state.answers,
+                )
+                opening = generate_opening(system_prompt)
+            st.session_state.messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "assistant", "content": opening},
+            ]
             st.session_state.stage = "chat"
             st.session_state._scroll_chat_once = True
+
+        for m in st.session_state.interview_messages:
+            with st.chat_message(m["role"]):
+                st.markdown(m["content"])
+
+        if st.session_state.interview_config is None:
+            with st.spinner(
+                "Подготовка первого вопроса..." if lang == "ru" else "Preparing first question..."
+            ):
+                question, config, is_done, diagnosis = start_interview(
+                    st.session_state.answers
+                )
+            if is_done:
+                finish_interview(diagnosis)
+            else:
+                st.session_state.interview_config = config
+                st.session_state.interview_messages.append(
+                    {"role": "assistant", "content": question}
+                )
+            st.rerun()
+
+        answer = st.chat_input(
+            "Ваш ответ" if lang == "ru" else "Your answer"
+        )
+        if answer:
+            st.session_state.interview_messages.append({"role": "user", "content": answer})
+            with st.spinner("..."):
+                question, is_done, diagnosis = resume_interview(
+                    answer, st.session_state.interview_config
+                )
+            if is_done:
+                finish_interview(diagnosis)
+            else:
+                st.session_state.interview_messages.append(
+                    {"role": "assistant", "content": question}
+                )
             st.rerun()
 
     elif st.session_state.stage == "chat":
