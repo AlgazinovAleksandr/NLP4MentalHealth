@@ -50,9 +50,7 @@ def run_therapist(system_prompt: str) -> None:
         HumanMessage(content=_SESSION_START_TRIGGER),
     ]
 
-    print("\n" + "=" * 62)
     print("  YOUR SUPPORT SESSION")
-    print("=" * 62)
     print("(Type /stop, quit, or exit at any time to end the session)\n")
 
     # ── Get opening message ────────────────────────────────────────────────────
@@ -94,36 +92,20 @@ def run_therapist(system_prompt: str) -> None:
                 "Encourage them to return whenever they need support. "
                 "Do not ask any further questions."
             )
+            # Append as a system follow-up so the LLM treats it as an instruction
             closing_messages = messages + [SystemMessage(content=closing_instruction)]
-            try:
-                closing = llm.invoke(closing_messages).content.strip()
-            except Exception:
-                closing = (
-                    "Thank you so much for sharing today — it takes real courage. "
-                    "Take good care of yourself, and come back whenever you need support."
-                )
+            closing = llm.invoke(closing_messages).content.strip()
 
             print(f"\nTherapist: {closing}\n")
-            print("=" * 62)
             print("Session ended. Take care of yourself.")
-            print("=" * 62 + "\n")
             return
 
         # ── Normal turn ────────────────────────────────────────────────────────
         messages.append(HumanMessage(content=user_input))
 
         print("\nTherapist is thinking...\n")
-        try:
-            response = llm.invoke(messages)
-            reply = response.content.strip()
-            messages.append(AIMessage(content=reply))
-        except Exception as e:
-            # Remove the user message we just appended so history stays consistent
-            messages.pop()
-            print(
-                f"Therapist: I'm sorry, I had trouble connecting just now "
-                f"({type(e).__name__}). Could you try again in a moment?\n"
-            )
-            continue
+        response = llm.invoke(messages)
+        reply = response.content.strip()
+        messages.append(AIMessage(content=reply))
 
         print(f"Therapist: {reply}\n")

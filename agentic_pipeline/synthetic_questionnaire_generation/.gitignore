@@ -1,5 +1,7 @@
-# Training checkpoints (large)
-runs/
+# Training checkpoints (large) — keep folder structure via .gitkeep
+runs/**
+!runs/**/
+!**/.gitkeep
 
 # Python
 __pycache__/

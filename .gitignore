@@ -55,6 +55,8 @@ cover/
 *.mo
 *.pot
 
+CLAUDE.md
+
 # Django stuff:
 *.log
 local_settings.py
@@ -205,3 +207,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Model weights inside training runs (keep folder structure via .gitkeep)
+**/runs/**/*
+!**/.gitkeep
