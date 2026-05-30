@@ -202,6 +202,9 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+skills-lock.json
+.agents
+
 
 # Marimo
 marimo/_static/
