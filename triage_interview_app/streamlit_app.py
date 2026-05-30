@@ -121,13 +121,24 @@ def _inject_style() -> None:
     )
 
 
+_SEVERITY_ORDER = ["relaxed", "concerned", "urgent"]
+
+_MAX_Q: dict[str, int] = {"relaxed": 2, "concerned": 4, "urgent": 3}
+
+
 def _sidebar_probs(ranked: list[dict[str, Any]], lang: str) -> None:
     if not ranked:
         return
     t = _strings(lang)
     st.sidebar.divider()
     st.sidebar.markdown(f"**{t['model_probs']}**")
-    for r in ranked:
+    sorted_ranked = sorted(
+        ranked,
+        key=lambda r: _SEVERITY_ORDER.index(r.get("label", ""))
+        if r.get("label", "") in _SEVERITY_ORDER
+        else 99,
+    )
+    for r in sorted_ranked:
         lab = str(r.get("label", ""))
         p = float(r.get("prob", 0.0))
         st.sidebar.caption(_class_display(lab, lang))
@@ -262,6 +273,11 @@ def main() -> None:
     elif st.session_state.stage == "interview":
         ranked = st.session_state.triage_ranked or []
         _sidebar_probs(ranked, lang)
+        st.sidebar.divider()
+        if st.sidebar.button("🔄 " + t["restart"]):
+            for k in list(st.session_state.keys()):
+                del st.session_state[k]
+            st.rerun()
 
         st.markdown(f"## {'Интервью' if lang == 'ru' else 'Intake interview'}")
 
@@ -287,11 +303,12 @@ def main() -> None:
                 st.markdown(m["content"])
 
         if st.session_state.interview_config is None:
+            max_q = _MAX_Q.get(st.session_state.triage_label or "", 4)
             with st.spinner(
                 "Подготовка первого вопроса..." if lang == "ru" else "Preparing first question..."
             ):
                 question, config, is_done, diagnosis = start_interview(
-                    st.session_state.answers
+                    st.session_state.answers, max_questions=max_q
                 )
             if is_done:
                 finish_interview(diagnosis)
@@ -302,14 +319,11 @@ def main() -> None:
                 )
             st.rerun()
 
-        answer = st.chat_input(
-            "Ваш ответ" if lang == "ru" else "Your answer"
-        )
-        if answer:
-            st.session_state.interview_messages.append({"role": "user", "content": answer})
+        if st.session_state.pop("_pending_interview_reply", False):
+            last_answer = st.session_state.interview_messages[-1]["content"]
             with st.spinner("..."):
                 question, is_done, diagnosis = resume_interview(
-                    answer, st.session_state.interview_config
+                    last_answer, st.session_state.interview_config
                 )
             if is_done:
                 finish_interview(diagnosis)
@@ -319,12 +333,25 @@ def main() -> None:
                 )
             st.rerun()
 
+        answer = st.chat_input(
+            "Ваш ответ" if lang == "ru" else "Your answer"
+        )
+        if answer:
+            st.session_state.interview_messages.append({"role": "user", "content": answer})
+            st.session_state._pending_interview_reply = True
+            st.rerun()
+
     elif st.session_state.stage == "chat":
         if st.session_state.pop("_scroll_chat_once", False):
             _scroll_to_bottom()
 
         ranked = st.session_state.triage_ranked or []
         _sidebar_probs(ranked, lang)
+        st.sidebar.divider()
+        if st.sidebar.button("🔄 " + t["restart"]):
+            for k in list(st.session_state.keys()):
+                del st.session_state[k]
+            st.rerun()
 
         st.markdown(f"## {t['chat_title']}")
 
@@ -334,23 +361,23 @@ def main() -> None:
             with st.chat_message(m["role"]):
                 st.markdown(m["content"])
 
+        if st.session_state.pop("_pending_chat_reply", False):
+            with st.spinner("Processing your message, please wait..." if lang == "en" else "Обработка сообщения, пожалуйста подождите..."):
+                last_user = st.session_state.messages[-1]["content"]
+                assistant = run_pipeline(st.session_state.messages, last_user)
+            st.session_state.messages.append({"role": "assistant", "content": assistant})
+            sid = st.session_state.get("log_db_session_id")
+            if isinstance(sid, int) and sid > 0:
+                log_chat_turn(sid, role="assistant", content=assistant)
+            st.rerun()
+
         prompt = st.chat_input(t["chat_placeholder"])
         if prompt:
             st.session_state.messages.append({"role": "user", "content": prompt})
             sid = st.session_state.get("log_db_session_id")
             if isinstance(sid, int) and sid > 0:
                 log_chat_turn(sid, role="user", content=prompt)
-            # --- CHAT_PIPELINE: ответ чата — замените run_pipeline (см. CHAT_PIPELINE.md) ---
-            assistant = run_pipeline(st.session_state.messages, prompt)
-            st.session_state.messages.append({"role": "assistant", "content": assistant})
-            if isinstance(sid, int) and sid > 0:
-                log_chat_turn(sid, role="assistant", content=assistant)
-            st.rerun()
-
-        st.divider()
-        if st.button(t["restart"], use_container_width=True):
-            for k in list(st.session_state.keys()):
-                del st.session_state[k]
+            st.session_state._pending_chat_reply = True
             st.rerun()
 
 
