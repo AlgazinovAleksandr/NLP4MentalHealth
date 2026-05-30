@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-"""Streamlit UI: questionnaire → triage API → chat. Run: streamlit run streamlit_app.py"""
 
 import html
 import os
@@ -223,31 +222,32 @@ def main() -> None:
                 st.stop()
 
             client = _http()
-            try:
-                vr = client.post(f"{_api_base()}/validate", json={"answers": answers})
-            except httpx.ConnectError:
-                st.error(t["conn_err"])
-                st.stop()
-            if vr.status_code != 200:
-                st.error(vr.text)
-                st.stop()
-            vj = vr.json()
-            if not vj.get("ok"):
-                for e in vj.get("errors", []):
-                    st.error(e)
-                st.stop()
+            with st.spinner("Reviewing your answers..." if lang == "en" else "Обработка анкеты..."):
+                try:
+                    vr = client.post(f"{_api_base()}/validate", json={"answers": answers})
+                except httpx.ConnectError:
+                    st.error(t["conn_err"])
+                    st.stop()
+                if vr.status_code != 200:
+                    st.error(vr.text)
+                    st.stop()
+                vj = vr.json()
+                if not vj.get("ok"):
+                    for e in vj.get("errors", []):
+                        st.error(e)
+                    st.stop()
 
-            try:
-                pr = client.post(
-                    f"{_api_base()}/predict",
-                    json={"answers": answers, "user_message": um.strip()},
-                )
-            except httpx.ConnectError:
-                st.error(t["conn_err"])
-                st.stop()
-            if pr.status_code != 200:
-                st.error(pr.text)
-                st.stop()
+                try:
+                    pr = client.post(
+                        f"{_api_base()}/predict",
+                        json={"answers": answers, "user_message": um.strip()},
+                    )
+                except httpx.ConnectError:
+                    st.error(t["conn_err"])
+                    st.stop()
+                if pr.status_code != 200:
+                    st.error(pr.text)
+                    st.stop()
             pj = pr.json()
             bert_label = str(pj.get("label", "")).strip()
             routing_label = str(pj.get("routing_label") or bert_label).strip()
@@ -279,7 +279,6 @@ def main() -> None:
                 del st.session_state[k]
             st.rerun()
 
-        st.markdown(f"## {'Интервью' if lang == 'ru' else 'Intake interview'}")
 
         def finish_interview(diagnosis: dict) -> None:
             with st.spinner(
@@ -321,7 +320,7 @@ def main() -> None:
 
         if st.session_state.pop("_pending_interview_reply", False):
             last_answer = st.session_state.interview_messages[-1]["content"]
-            with st.spinner("..."):
+            with st.spinner("Thinking about your response..." if lang == "en" else "Обдумываю ответ..."):
                 question, is_done, diagnosis = resume_interview(
                     last_answer, st.session_state.interview_config
                 )
@@ -353,7 +352,11 @@ def main() -> None:
                 del st.session_state[k]
             st.rerun()
 
-        st.markdown(f"## {t['chat_title']}")
+        for m in st.session_state.interview_messages:
+            with st.chat_message(m["role"]):
+                st.markdown(m["content"])
+
+        st.caption("— " + ("Ваш терапевт" if lang == "ru" else "Your therapist") + " —")
 
         for m in st.session_state.messages:
             if m["role"] == "system":
