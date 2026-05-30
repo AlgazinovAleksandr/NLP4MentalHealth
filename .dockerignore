@@ -1,0 +1,31 @@
+# Git history
+.git/
+.gitignore
+
+# Virtual environments — dependencies are installed inside the image
+**/.venv/
+**/venv/
+
+# Python bytecode
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Credentials — injected at runtime via env_file, never baked into the image
+agentic_pipeline/.env
+
+# BERT model weights — large binary files, mounted as a volume at runtime
+agentic_pipeline/synthetic_questionnaire_generation/runs/
+
+# Session database — persisted via a named Docker volume
+triage_interview_app/data/
+
+# Notebooks, EDA, and ML training code — not needed to run the app
+ML/
+EDA/
+**/*.ipynb
+
+# Editor / OS noise
+.DS_Store
+**/.DS_Store

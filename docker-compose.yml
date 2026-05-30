@@ -1,0 +1,75 @@
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# Setup:
+#   1. Fill in agentic_pipeline/.env (copy from agentic_pipeline/.env.example)
+#   2. Place BERT weights at:
+#        agentic_pipeline/synthetic_questionnaire_generation/runs/triage_bert_neutral/best_model/
+#   3. docker compose up --build
+#
+# App:     http://localhost:8501
+# API docs: http://localhost:8765/docs
+# ---------------------------------------------------------------------------
+
+services:
+
+  # ── FastAPI backend: BERT triage inference ──────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      uvicorn backend.main:app
+      --host 0.0.0.0
+      --port 8765
+    ports:
+      - "8765:8765"
+    # Secrets are read from agentic_pipeline/.env on the host.
+    # They are never baked into the image.
+    env_file:
+      - ./agentic_pipeline/.env
+    volumes:
+      # Model weights (not in git) — mounted read-only
+      - ./agentic_pipeline/synthetic_questionnaire_generation/runs:/app/agentic_pipeline/synthetic_questionnaire_generation/runs:ro
+      # Persist the session log database
+      - triage_data:/app/triage_interview_app/data
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - >
+          python -c
+          "import urllib.request, sys;
+          r=urllib.request.urlopen('http://localhost:8765/health', timeout=5);
+          sys.exit(0 if r.status==200 else 1)"
+      interval: 20s
+      timeout: 15s
+      retries: 6
+      # BERT model loading can take up to ~60 s on first start
+      start_period: 90s
+
+  # ── Streamlit frontend ───────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      streamlit run streamlit_app.py
+      --server.port 8501
+      --server.address 0.0.0.0
+      --server.headless true
+    ports:
+      - "8501:8501"
+    env_file:
+      - ./agentic_pipeline/.env
+    environment:
+      # Point Streamlit at the backend service, not localhost
+      - TRIAGE_API_URL=http://backend:8765
+    volumes:
+      - triage_data:/app/triage_interview_app/data
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  # Named volume keeps SQLite sessions across container restarts
+  triage_data:
