@@ -310,41 +310,34 @@ footer: 'NLP4MentalHealth · 2026'
 
 ---
 
-### Архитектура системы
+### Постановка задачи
 
-## Постановка задачи
+## Техническая цель
 
-<div style="margin-bottom: 14px; font-size: 0.9em; color: var(--muted);">
-  Пользователь заполняет анкету &rarr; система оценивает состояние &rarr; проводит интервью &rarr; ставит диагноз &rarr; запускает поддерживающий чат.
-</div>
-
-<div class="pipeline-box">
-  <span style="color: var(--accent); font-weight: 700;">Анкета (JSON)</span>
-  <span class="arrow"> ──▶ </span>
-  <span style="font-weight: 600;">BERT-триаж</span>
-  <span class="arrow"> ──▶ </span>
-  <span style="font-weight: 600;">Интервьюер</span>
-  <span class="label">(LLM #1)</span>
-  <span class="arrow"> ──▶ </span>
-  <span style="font-weight: 600;">Диагностик</span>
-  <span class="label">(LLM #2)</span>
-  <span class="arrow"> ──▶ </span>
-  <span style="font-weight: 600;">Терапевт</span>
-  <span class="label">(LLM #3)</span>
-</div>
-
-<div class="card-row" style="margin-top: 20px;">
-  <div class="card" style="text-align: center; padding: 16px 12px;">
-    <div style="font-size: 1.8em; font-weight: 800; color: #1a7a3a;">relaxed</div>
-    <div style="font-size: 0.75em; color: var(--muted); margin-top: 4px;">Низкий уровень стресса</div>
+<div class="card-row">
+  <div class="card" style="flex: 1.2; border-left: 4px solid var(--accent);">
+    <h4>Задача</h4>
+    <ul>
+      <li>Разработать NLP-систему первичной психологической поддержки пользователей</li>
+      <li>Вход: структурированная анкета &rarr; триаж &rarr; диагностическое интервью &rarr; поддерживающий чат</li>
+      <li>Обучение и тестирование на клинических данных или верифицированной синтетике</li>
+    </ul>
   </div>
-  <div class="card" style="text-align: center; padding: 16px 12px;">
-    <div style="font-size: 1.8em; font-weight: 800; color: #b8860b;">concerned</div>
-    <div style="font-size: 0.75em; color: var(--muted); margin-top: 4px;">Умеренное беспокойство</div>
-  </div>
-  <div class="card" style="text-align: center; padding: 16px 12px;">
-    <div style="font-size: 1.8em; font-weight: 800; color: var(--accent);">urgent</div>
-    <div style="font-size: 0.75em; color: var(--muted); margin-top: 4px;">Требует приоритета</div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+    <div class="card" style="border-left: 4px solid var(--accent);">
+      <h4>Критерии качества</h4>
+      <ul style="font-size: 0.78em; line-height: 1.6;">
+        <li>Accuracy / F1 классификатора уровня риска</li>
+        <li>Качество и безопасность агентских ответов</li>
+      </ul>
+    </div>
+    <div class="card" style="border-left: 4px solid #aaaaaa;">
+      <h4 style="color: var(--muted);">Планы по оценке</h4>
+      <ul style="font-size: 0.78em; color: var(--muted); line-height: 1.6;">
+        <li>Human evaluation (оценка психологами)</li>
+        <li>LLM-as-a-judge + A/B тестирование агентов</li>
+      </ul>
+    </div>
   </div>
 </div>
 
@@ -474,40 +467,92 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
 
 ---
 
-### LangGraph граф + стек
+### Агентный пайплайн
 
-## Архитектура агентного пайплайна
+## Архитектура: поток данных
 
-<div class="card-row" style="align-items: flex-start;">
-  <div style="flex: 1.3; background: #1a1a1a; border-radius: 14px; padding: 22px 24px; color: #e0e0e0; font-family: monospace; font-size: 0.78em; line-height: 1.9;">
-    <div style="color: #b22222; font-weight: 700; font-size: 0.85em; margin-bottom: 10px; letter-spacing: 0.1em; text-transform: uppercase;">LangGraph топология</div>
-    <span style="color: #22c55e;">START</span> <span style="color: #888;">──▶</span> <span style="color: #e0e0e0;">check_urgent</span><br>
-    &nbsp;&nbsp;<span style="color: #888;">├─[self_harm]──▶</span> <span style="color: #b22222;">diagnostician</span> <span style="color: #888;">──▶</span> <span style="color: #22c55e;">END</span><br>
-    &nbsp;&nbsp;<span style="color: #888;">└─[ok]─────────▶</span> <span style="color: #e0e0e0;">interviewer</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #888;">├─[sufficient]──▶</span> <span style="color: #b22222;">diagnostician</span> <span style="color: #888;">──▶</span> <span style="color: #22c55e;">END</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #888;">└─[need more]───▶</span> <span style="color: #f0c040;">human_input</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #888;">└──▶</span> <span style="color: #e0e0e0;">interviewer</span> <span style="color: #888;">(цикл)</span>
-    <div style="margin-top: 14px; color: #555; font-size: 0.88em;">interrupt() в human_input_node<br>— совместим со Streamlit</div>
+<div style="margin-bottom: 14px; font-size: 0.9em; color: var(--muted);">
+  Пользователь заполняет анкету &rarr; система оценивает состояние &rarr; проводит интервью &rarr; ставит диагноз &rarr; запускает поддерживающий чат.
+</div>
+
+<div class="pipeline-box">
+  <span style="color: var(--accent); font-weight: 700;">Анкета (JSON)</span>
+  <span class="arrow"> ──▶ </span>
+  <span style="font-weight: 600;">BERT-триаж</span>
+  <span class="arrow"> ──▶ </span>
+  <span style="font-weight: 600;">Интервьюер</span>
+  <span class="label">(LLM #1)</span>
+  <span class="arrow"> ──▶ </span>
+  <span style="font-weight: 600;">Диагностик</span>
+  <span class="label">(LLM #2)</span>
+  <span class="arrow"> ──▶ </span>
+  <span style="font-weight: 600;">Терапевт</span>
+  <span class="label">(LLM #3)</span>
+</div>
+
+<div class="card-row" style="margin-top: 20px;">
+  <div class="card" style="text-align: center; padding: 16px 12px;">
+    <div style="font-size: 1.8em; font-weight: 800; color: #1a7a3a;">relaxed</div>
+    <div style="font-size: 0.75em; color: var(--muted); margin-top: 4px;">Низкий уровень стресса · 2 вопроса</div>
   </div>
-  <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-    <div class="card" style="padding: 12px 16px;">
-      <h4 style="margin-bottom: 4px; font-size: 0.88em;">LangGraph / LangChain</h4>
-      <p style="font-size: 0.74em;">Граф с прерываниями, state machine, persistent threads</p>
-    </div>
-    <div class="card" style="padding: 12px 16px;">
-      <h4 style="margin-bottom: 4px; font-size: 0.88em;">Structured output (Pydantic)</h4>
-      <p style="font-size: 0.74em;">Диагностик возвращает 11 состояний с вероятностями</p>
-    </div>
-    <div class="card" style="padding: 12px 16px;">
-      <h4 style="margin-bottom: 4px; font-size: 0.88em;">FastAPI + Streamlit</h4>
-      <p style="font-size: 0.74em;">BERT-инференс через REST; UI — state machine на Streamlit</p>
-    </div>
-    <div class="card" style="padding: 12px 16px;">
-      <h4 style="margin-bottom: 4px; font-size: 0.88em;">Docker Compose · SQLite</h4>
-      <p style="font-size: 0.74em;">Одна команда запуска; логирование сессий</p>
-    </div>
+  <div class="card" style="text-align: center; padding: 16px 12px;">
+    <div style="font-size: 1.8em; font-weight: 800; color: #b8860b;">concerned</div>
+    <div style="font-size: 0.75em; color: var(--muted); margin-top: 4px;">Умеренное беспокойство · 4 вопроса</div>
+  </div>
+  <div class="card" style="text-align: center; padding: 16px 12px;">
+    <div style="font-size: 1.8em; font-weight: 800; color: var(--accent);">urgent</div>
+    <div style="font-size: 0.75em; color: var(--muted); margin-top: 4px;">Требует приоритета · 3 вопроса</div>
   </div>
 </div>
+
+---
+
+### Стек
+
+## Технологический стэк
+
+<div class="card-row" style="flex-wrap: wrap; gap: 14px; margin-top: 10px;">
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">FastAPI</h4>
+    <p>REST API: <code>/validate</code> · <code>/predict</code> · <code>/health</code></p>
+  </div>
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">Streamlit</h4>
+    <p>UI-автомат: анкета → интервью → чат</p>
+  </div>
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">Docker Compose</h4>
+    <p>Один запуск, два сервиса, персистентный том</p>
+  </div>
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">LangGraph</h4>
+    <p>Граф с прерываниями, human-in-the-loop</p>
+  </div>
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">OpenRouter</h4>
+    <p>Любой OpenAI-compatible LLM-провайдер</p>
+  </div>
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">Fine-tuned BERT</h4>
+    <p>Классификатор триажа на 1 000 синтетических анкет</p>
+  </div>
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">Pydantic</h4>
+    <p>Структурированный вывод диагностика</p>
+  </div>
+  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
+    <h4 style="margin: 0 0 4px;">SQLite · SQLAlchemy</h4>
+    <p>Логирование сессий, авто-создание БД</p>
+  </div>
+</div>
+
+---
+
+<!-- _style: "padding: 0; background: #1a1a1a;" -->
+<!-- _footer: "" -->
+<!-- _paginate: skip -->
+
+<video src="demo_final.mp4" autoplay muted loop controls style="width: 100%; height: 680px; object-fit: contain; display: block;"></video>
 
 ---
 

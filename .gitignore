@@ -146,6 +146,9 @@ ENV/
 env.bak/
 venv.bak/
 
+demo_final.mp4
+NLP4MentalHealth_Demo.webm
+
 # Spyder project settings
 .spyderproject
 .spyproject
