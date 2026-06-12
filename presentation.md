@@ -362,7 +362,7 @@ footer: 'NLP4MentalHealth · 2026'
         <code>concern_level × 3 + PHQ-2 + GAD-2 + daily_impact + prior_help</code></li>
       <li><code>self_harm</code> в списке проблем &rarr; всегда <strong>urgent</strong></li>
       <li>Score ≤ 2 &rarr; <strong>relaxed</strong>; иначе &rarr; <strong>concerned</strong></li>
-      <li>Сравнение <strong>7 LLM-моделей</strong> для генерации (MODEL_COMPARISON_REPORT)</li>
+      <li>Сравнение <strong>7 LLM-моделей</strong> для генерации</li>
     </ul>
   </div>
 </div>
@@ -422,10 +422,8 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
   <div style="flex: 1;">
     <table>
       <tr><th>Метрика</th><th>Значение</th></tr>
-      <tr><td>Val Accuracy</td><td><strong>[PLACEHOLDER]</strong></td></tr>
-      <tr><td>Val F1 (weighted)</td><td><strong>[PLACEHOLDER]</strong></td></tr>
-      <tr><td>Best LR</td><td><strong>[PLACEHOLDER]</strong></td></tr>
-      <tr><td>Best Dropout</td><td><strong>[PLACEHOLDER]</strong></td></tr>
+      <tr><td>Val Accuracy</td><td><strong>0.82</strong></td></tr>
+      <tr><td>Val F1 (weighted)</td><td><strong>0.83</strong></td></tr>
     </table>
     <div style="margin-top: 16px; background: var(--card); border-radius: 10px; padding: 14px 18px; font-size: 0.78em; color: var(--muted);">
       <strong style="color: var(--fg);">Артефакты MLflow</strong><br>
@@ -437,8 +435,9 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
   <div style="flex: 1.1; display: flex; flex-direction: column; gap: 12px;">
     <div style="background: var(--card); border-radius: 10px; padding: 16px 18px; border-left: 4px solid var(--accent);">
       <div style="font-size: 0.72em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">Training Loss</div>
-      <div style="font-size: 1.5em; font-weight: 800; color: var(--accent);">[PLACEHOLDER]</div>
+      <div style="font-size: 1.5em; font-weight: 800; color: var(--accent);">0.46</div>
       <div style="font-size: 0.7em; color: var(--muted);">График: Training Loss / Val F1</div>
+      <div style="font-size: 1.1em; font-weight: 600; color: #b8860b;">[PLACEHOLDER]</div>
     </div>
     <div style="background: var(--card); border-radius: 10px; padding: 16px 18px; border-left: 4px solid #b8860b;">
       <div style="font-size: 0.72em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">Confusion Matrix</div>
@@ -564,8 +563,8 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
   <div class="card" style="border-top: 4px solid var(--accent);">
     <h4>Метрики BERT</h4>
     <div style="font-size: 0.78em; color: var(--muted); line-height: 1.9;">
-      Accuracy &nbsp;&nbsp;&nbsp;&rarr;&nbsp; <strong style="color: var(--fg);">[PLACEHOLDER]</strong><br>
-      F1 weighted &rarr; <strong style="color: var(--fg);">[PLACEHOLDER]</strong><br>
+      Accuracy &nbsp;&nbsp;&nbsp;&rarr;&nbsp; <strong style="color: var(--fg);">0.82</strong><br>
+      F1 weighted &rarr; <strong style="color: var(--fg);">0.83</strong><br>
       <br>
       <span style="font-size: 0.9em;">7 классов психических состояний</span>
     </div>
