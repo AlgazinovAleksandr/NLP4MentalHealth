@@ -145,6 +145,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.idea
 
 demo_final.mp4
 NLP4MentalHealth_Demo.webm

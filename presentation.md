@@ -376,6 +376,71 @@ footer: 'NLP4MentalHealth · 2026'
 
 ---
 
+### BERT-триаж: данные
+
+## Структура данных: поля анкеты
+
+<style scoped>
+table { font-size: 0.62em; border-spacing: 0 3px; margin: 0 auto; width: max-content; }
+table th { padding: 6px 12px; font-size: 0.72em; }
+table td { padding: 6px 12px; }
+</style>
+
+| Секция | Поля | Тип | Роль в скоринге |
+|--------|------|-----|-----------------|
+| §1 Demographics | `q_gender` · `q_age`* · `q_occupation` | cat / num | (контекст) |
+| §2 Concern | `q_has_mental_concern` | ordinal 0–3 | concern_score &times; **3** |
+| | `q_concern_areas` (multi) | bool flags | **self_harm** ⚠ &rarr; urgent |
+| §3 PHQ-2 / GAD-2 | `q_phq2_1` · `q_phq2_2` · `q_gad2_1` · `q_gad2_2` | scale 0–3 | sum ≥ 3 &rarr; +**3** (каждый) |
+| §4 Impact | `q_daily_impact` · `q_duration`** | ordinal 0–4 | impact_score &times; **1** |
+| §5 Help History | `q_prior_help` · `q_diagnosis_known`** | ordinal 0–1 | concern_score &times; **1** |
+| §6 App Goal | `q_app_goal` (multi) | bool flags | (персонализация UX) |
+
+<div style="font-size: 0.48em; color: var(--muted); margin-top: 2px;">
+  <center>* возраст&nbsp;·&nbsp; ** skip-logic поля &nbsp;·&nbsp; 
+  <strong>14</strong> вопросов (макс.) / <strong>9</strong> (мин.)</center>
+</div>
+
+---
+
+### BERT-триаж: данные
+
+## Структура данных: скоринг и метки
+
+<div class="card-row" style="gap: 16px; margin-top: 6px; align-items: flex-start;">
+  <div style="flex: 1;">
+    <div class="card" style="border-left: 4px solid var(--accent); padding: 12px 14px;">
+      <h4 style="margin: 0 0 6px; font-size: 0.78em;">Формула скоринга</h4>
+      <div style="font-size: 0.62em; font-family: monospace; line-height: 1.85; color: var(--fg);">
+        <span style="color: var(--muted);">score =</span> concern_score &times; <strong>3</strong><br>
+        <span style="color: var(--muted);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</span> (PHQ-2 sum ≥ 3) &times; <strong>3</strong><br>
+        <span style="color: var(--muted);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</span> (GAD-2 sum ≥ 3) &times; <strong>3</strong><br>
+        <span style="color: var(--muted);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</span> impact_score &times; <strong>1</strong><br>
+        <span style="color: var(--muted);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</span> prior_help_score &times; <strong>1</strong>
+      </div>
+    </div>
+    <div style="margin-top: 8px; font-size: 0.55em; color: var(--muted); line-height: 1.5; padding: 0 4px;">
+      PHQ-2 / GAD-2 — клинические скрининги, порог: sum ≥ 3
+    </div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+    <div style="background: #f0f9f4; border: 1.5px solid #1a7a3a; border-radius: 8px; padding: 10px 14px;">
+      <strong><div style="font-size: 0.78em; font-weight: 800; color: #1a7a3a;">relaxed</div></strong>
+      <div style="font-size: 0.58em; color: #2d6a4f; line-height: 1.4;">score ≤ 2 · Информ. чат-бот без классификатора</div>
+    </div>
+    <strong><div style="background: #fdf8ec; border: 1.5px solid #b8860b; border-radius: 8px; padding: 10px 14px;">
+      <div style="font-size: 0.78em; font-weight: 800; color: #b8860b;">concerned</div></strong>
+      <div style="font-size: 0.58em; color: #7d6608; line-height: 1.4;">score ≥ 3 · Бинарный классификатор + интервью</div>
+    </div>
+    <strong><div style="background: #fdf0f0; border: 1.5px solid var(--accent); border-radius: 8px; padding: 10px 14px;">
+      <div style="font-size: 0.78em; font-weight: 800; color: var(--accent);">urgent ⚠</div></strong>
+      <div style="font-size: 0.58em; color: #7a0000; line-height: 1.4;">self_harm в ответах · Кризисный протокол</div>
+    </div>
+  </div>
+</div>
+
+---
+
 ### BERT-классификатор
 
 ## Датасет и обучение
@@ -418,6 +483,11 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
 
 ## Метрики и артефакты
 
+<style scoped>
+  img[src="loss_validation.jpg"] { max-height: 150px; object-fit: contain; display: block; margin: 0 auto; }
+  img[src="conf_matrix.jpg"] { max-height: 340px; object-fit: contain; display: block; margin: 0 auto; }
+</style>
+
 <div class="card-row" style="align-items: flex-start;">
   <div style="flex: 1;">
     <table>
@@ -432,17 +502,12 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
       <code>best_model/</code> &nbsp;(веса BERT)
     </div>
   </div>
-  <div style="flex: 1.1; display: flex; flex-direction: column; gap: 12px;">
-    <div style="background: var(--card); border-radius: 10px; padding: 16px 18px; border-left: 4px solid var(--accent);">
-      <div style="font-size: 0.72em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">Training Loss</div>
-      <div style="font-size: 1.5em; font-weight: 800; color: var(--accent);">0.46</div>
-      <div style="font-size: 0.7em; color: var(--muted);">График: Training Loss / Val F1</div>
-      <div style="font-size: 1.1em; font-weight: 600; color: #b8860b;">[PLACEHOLDER]</div>
+  <div style="flex: 1.1; display: flex; flex-direction: column; gap: 8px;">
+    <div style="background: var(--card); border-radius: 10px; padding: 8px 12px; border-left: 4px solid var(--accent);">
+      <img src="loss_validation.jpg">
     </div>
-    <div style="background: var(--card); border-radius: 10px; padding: 16px 18px; border-left: 4px solid #b8860b;">
-      <div style="font-size: 0.72em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">Confusion Matrix</div>
-      <div style="font-size: 1.1em; font-weight: 600; color: #b8860b;">[PLACEHOLDER]</div>
-      <div style="font-size: 0.7em; color: var(--muted);">confusion_matrix.png из MLflow</div>
+    <div style="background: var(--card); border-radius: 10px; padding: 8px 12px; border-left: 4px solid #b8860b;">
+      <img src="conf_matrix.jpg">
     </div>
   </div>
 </div>
