@@ -285,6 +285,13 @@ footer: 'NLP4MentalHealth · 2026'
 
 ## Проблема и роль LLM
 
+<style scoped>
+.card { padding: 12px 16px !important; }
+.card h4 { margin: 0 0 4px !important; font-size: 0.88em !important; }
+.card ul { font-size: 0.7em !important; line-height: 1.45 !important; margin: 0 !important; padding-left: 16px !important; }
+blockquote { margin-top: 10px !important; font-size: 0.82em !important; }
+</style>
+
 <div class="card-row">
   <div class="card" style="border-left: 4px solid #c0392b;">
     <h4>Проблема</h4>
@@ -347,6 +354,13 @@ footer: 'NLP4MentalHealth · 2026'
 
 ## Синтетическая генерация обучающих данных
 
+<style scoped>
+.card { padding: 12px 16px !important; }
+.card h4 { margin: 0 0 4px !important; font-size: 0.88em !important; }
+.card p { font-size: 0.7em !important; line-height: 1.45 !important; margin: 0 !important; }
+.card ul { font-size: 0.7em !important; line-height: 1.45 !important; margin: 0 !important; padding-left: 16px !important; }
+</style>
+
 <div class="card-row">
   <div class="card" style="flex: 1.1;">
     <h4>Задача и проблема данных</h4>
@@ -367,7 +381,7 @@ footer: 'NLP4MentalHealth · 2026'
   </div>
 </div>
 
-<div style="margin-top: 16px; font-size: 0.8em; color: var(--muted);">
+<div style="margin-top: 10px; font-size: 0.75em; color: var(--muted);">
   <span class="tag">LLM-in-the-loop</span>
   <span class="tag">Rule-based verification</span>
   <span class="tag">PHQ-2 / GAD-2</span>
@@ -445,6 +459,13 @@ table td { padding: 6px 12px; }
 
 ## Датасет и обучение
 
+<style scoped>
+.card { padding: 12px 16px !important; }
+.card h4 { margin: 0 0 4px !important; font-size: 0.88em !important; }
+.card p { font-size: 0.7em !important; line-height: 1.4 !important; margin: 0 !important; }
+pre { padding: 14px 18px !important; font-size: 0.7em !important; line-height: 1.55 !important; }
+</style>
+
 <div class="card-row">
   <div class="card" style="flex: 1.2;">
     <h4>Датасет</h4>
@@ -457,7 +478,7 @@ table td { padding: 6px 12px; }
   </div>
   <div class="card" style="flex: 1.8; background: #1a1a1a; color: #e0e0e0;">
     <h4 style="color: #b22222;">Фрагмент MLflow-трекинга</h4>
-    <pre style="margin: 0; padding: 0; background: transparent; border: none; font-size: 0.78em; line-height: 1.75; color: #e0e0e0;"><code>mlflow.log_param("lr", lr)
+    <pre style="margin: 0; padding: 0; background: transparent; border: none; font-size: 0.7em; line-height: 1.55; color: #e0e0e0;"><code>mlflow.log_param("lr", lr)
 mlflow.log_param("dropout", dropout)
 
 # per epoch
@@ -469,7 +490,7 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
   </div>
 </div>
 
-<div style="margin-top: 14px; font-size: 0.8em; color: var(--muted);">
+<div style="margin-top: 10px; font-size: 0.75em; color: var(--muted);">
   <span class="tag">bert-base-uncased</span>
   <span class="tag">MLflow</span>
   <span class="tag">Hyperparameter search</span>
@@ -575,39 +596,22 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
 
 ## Технологический стэк
 
-<div class="card-row" style="flex-wrap: wrap; gap: 14px; margin-top: 10px;">
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">FastAPI</h4>
-    <p>REST API: <code>/validate</code> · <code>/predict</code> · <code>/health</code></p>
-  </div>
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">Streamlit</h4>
-    <p>UI-автомат: анкета → интервью → чат</p>
-  </div>
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">Docker Compose</h4>
-    <p>Один запуск, два сервиса, персистентный том</p>
-  </div>
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">LangGraph</h4>
-    <p>Граф с прерываниями, human-in-the-loop</p>
-  </div>
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">OpenRouter</h4>
-    <p>Любой OpenAI-compatible LLM-провайдер</p>
-  </div>
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">Fine-tuned BERT</h4>
-    <p>Классификатор триажа на 1 000 синтетических анкет</p>
-  </div>
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">Pydantic</h4>
-    <p>Структурированный вывод диагностика</p>
-  </div>
-  <div class="card" style="flex: 0 0 calc(25% - 11px); padding: 10px 14px;">
-    <h4 style="margin: 0 0 4px;">SQLite · SQLAlchemy</h4>
-    <p>Логирование сессий, авто-создание БД</p>
-  </div>
+<style scoped>
+.card-row { flex-wrap: wrap !important; gap: 10px !important; margin-top: 8px !important; }
+.card { flex: 0 0 calc(25% - 8px) !important; padding: 10px 12px !important; }
+.card h4 { margin: 0 0 3px !important; font-size: 0.82em !important; }
+.card p { font-size: 0.62em !important; line-height: 1.4 !important; margin: 0 !important; }
+</style>
+
+<div class="card-row">
+  <div class="card"><h4>FastAPI</h4><p>REST API: <code>/validate</code> · <code>/predict</code> · <code>/health</code></p></div>
+  <div class="card"><h4>Streamlit</h4><p>UI-автомат: анкета → интервью → чат</p></div>
+  <div class="card"><h4>Docker Compose</h4><p>Один запуск, два сервиса, персистентный том</p></div>
+  <div class="card"><h4>LangGraph</h4><p>Граф с прерываниями, human-in-the-loop</p></div>
+  <div class="card"><h4>OpenRouter</h4><p>Любой OpenAI-compatible LLM-провайдер</p></div>
+  <div class="card"><h4>Fine-tuned BERT</h4><p>Классификатор триажа на 1 000 синтетических анкет</p></div>
+  <div class="card"><h4>Pydantic</h4><p>Структурированный вывод диагностика</p></div>
+  <div class="card"><h4>SQLite · SQLAlchemy</h4><p>Логирование сессий, авто-создание БД</p></div>
 </div>
 
 ---
@@ -624,10 +628,16 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
 
 ## Что получилось
 
+<style scoped>
+.card { padding: 12px 14px !important; }
+.card h4 { margin: 0 0 4px !important; font-size: 0.85em !important; }
+.card ul { font-size: 0.68em !important; line-height: 1.4 !important; margin: 0 !important; padding-left: 14px !important; }
+</style>
+
 <div class="card-row">
   <div class="card" style="border-top: 4px solid var(--accent);">
     <h4>Метрики BERT</h4>
-    <div style="font-size: 0.78em; color: var(--muted); line-height: 1.9;">
+    <div style="font-size: 0.68em; color: var(--muted); line-height: 1.7;">
       Accuracy &nbsp;&nbsp;&nbsp;&rarr;&nbsp; <strong style="color: var(--fg);">0.82</strong><br>
       F1 weighted &rarr; <strong style="color: var(--fg);">0.83</strong><br>
       <br>
@@ -636,7 +646,7 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
   </div>
   <div class="card" style="border-top: 4px solid #1a7a3a;">
     <h4 style="color: #1a7a3a;">Технические достижения</h4>
-    <ul style="font-size: 0.78em;">
+    <ul>
       <li>End-to-end пайплайн от анкеты до чата</li>
       <li>Docker Compose: один запуск</li>
       <li>Human-in-the-loop через <code>interrupt()</code></li>
@@ -646,7 +656,7 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
   </div>
   <div class="card" style="border-top: 4px solid #b8860b;">
     <h4 style="color: #b8860b;">Качество агентов</h4>
-    <ul style="font-size: 0.78em;">
+    <ul>
       <li>Структурированный вывод (Pydantic)</li>
       <li><strong>11</strong> диагностических состояний</li>
       <li>Адаптивный тон терапевта</li>
@@ -661,6 +671,12 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
 ### Выводы
 
 ## Что сделано и что дальше
+
+<style scoped>
+.card { padding: 12px 16px !important; }
+.card h4 { margin: 0 0 6px !important; font-size: 0.88em !important; }
+.card ul { font-size: 0.7em !important; line-height: 1.5 !important; margin: 0 !important; padding-left: 16px !important; }
+</style>
 
 <div class="card-row">
   <div class="card" style="border-left: 4px solid var(--accent); flex: 1.1;">
@@ -684,6 +700,65 @@ mlflow.log_artifact("classification_report.txt")</code></pre>
   </div>
 </div>
 
-<div style="margin-top: 22px; text-align: center; font-size: 0.82em; color: var(--muted);">
+<div style="margin-top: 14px; text-align: center; font-size: 0.78em; color: var(--muted);">
   Репозиторий: <strong style="color: var(--fg);">NLP4MentalHealth</strong> &nbsp;·&nbsp; Стек: Python · BERT · LangGraph · FastAPI · Streamlit · Docker
+</div>
+
+---
+
+### Команда
+
+## Зоны ответственности
+
+<style scoped>
+.card { padding: 10px 12px !important; }
+.card h4 { margin: 0 0 4px !important; font-size: 0.8em !important; }
+.card ul { font-size: 0.6em !important; line-height: 1.4 !important; margin: 0 !important; padding-left: 14px !important; }
+.card .tag { font-size: 0.6em !important; padding: 2px 7px !important; margin: 1px !important; }
+</style>
+
+<div class="card-row" style="gap: 10px; margin-top: 6px;">
+  <div class="card" style="flex: 1; border-top: 3px solid var(--accent); padding: 10px 12px;">
+    <h4 style="margin: 0 0 6px; font-size: 0.82em;">Кожевников Илья</h4>
+    <ul style="font-size: 0.62em; line-height: 1.5; margin: 0; padding-left: 14px;">
+      <li>EDA датасетов</li>
+      <li>BERT fine-tuning (7 классов, 53K)</li>
+      <li>Интеграция MLflow</li>
+      <li>Ablation study бейзлайнов</li>
+      <li>Документация</li>
+    </ul>
+    <div style="margin-top: 6px;"><span class="tag">Данные</span> <span class="tag">Обучение</span> <span class="tag">Метрики</span></div>
+  </div>
+  <div class="card" style="flex: 1; border-top: 3px solid #1a7a3a; padding: 10px 12px;">
+    <h4 style="margin: 0 0 6px; font-size: 0.82em;">Алгазинов Александр</h4>
+    <ul style="font-size: 0.62em; line-height: 1.5; margin: 0; padding-left: 14px;">
+      <li>LangGraph-пайплайн (3 агента)</li>
+      <li>Синтетическая генерация данных</li>
+      <li>ML-бейзлайны</li>
+      <li>Streamlit UI + Backend + Docker Compose</li>
+      <li>Документация</li>
+    </ul>
+    <div style="margin-top: 6px;"><span class="tag">Агенты</span> <span class="tag">Пайплайн</span> <span class="tag">Интеграция</span></div>
+  </div>
+  <div class="card" style="flex: 1; border-top: 3px solid #b8860b; padding: 10px 12px;">
+    <h4 style="margin: 0 0 6px; font-size: 0.82em;">Рыжов Алексей</h4>
+    <ul style="font-size: 0.62em; line-height: 1.5; margin: 0; padding-left: 14px;">
+      <li>EDA (Amod, MentalChat16K)</li>
+      <li>LLM-as-a-judge оценка</li>
+      <li>Предобработка данных</li>
+      <li>UI-компоненты</li>
+      <li>Документация</li>
+    </ul>
+    <div style="margin-top: 6px;"><span class="tag">Данные</span> <span class="tag">Оценка</span> <span class="tag">EDA</span></div>
+  </div>
+  <div class="card" style="flex: 1; border-top: 3px solid #5b6abf; padding: 10px 12px;">
+    <h4 style="margin: 0 0 6px; font-size: 0.82em;">Габовский Богдан</h4>
+    <ul style="font-size: 0.62em; line-height: 1.5; margin: 0; padding-left: 14px;">
+      <li>Архитектура системы</li>
+      <li>Анкета и скоринговая модель</li>
+      <li>Backend</li>
+      <li>Документация</li>
+    </ul>
+    <div style="margin-top: 6px;"><span class="tag">Архитектура</span> <span class="tag">Анкета</span> <span class="tag">DevOps</span></div>
+  </div>
 </div>
