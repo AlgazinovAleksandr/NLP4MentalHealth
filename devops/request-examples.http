@@ -1,0 +1,122 @@
+### 1. Авторизация
+
+### 1.1 Авторизация - Админ
+POST http://localhost:9000/auth/realms/fastapi_app/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id = fastapi-keycloak &
+grant_type = password &
+username = test_admin &
+password = 123
+
+> {%
+    client.global.set("ADMIN_TOKEN", response.body.access_token);
+%}
+
+
+### 1.2 Авторизация - Обычный пользователь
+POST http://localhost:9000/auth/realms/fastapi_app/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id = fastapi-keycloak &
+grant_type = password &
+username = test_non_admin &
+password = 123
+
+> {%
+    client.global.set("USER_TOKEN", response.body.access_token);
+%}
+
+### 2. /forward — предсказание диагноза
+
+### 2.1 Успешный вызов /forward от обычного пользователя - ожидаем ц00 и diagnosis
+POST http://localhost:8080/forward
+Authorization: Bearer {{USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "message": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
+
+### 2.2 Невалидный запрос - ожидаем 400 bad request
+POST http://localhost:8080/forward
+Authorization: Bearer {{USER_TOKEN}}
+Content-Type: application/json
+
+{
+  "message": "short"
+}
+
+
+### =========================
+### 3. История — должна быть доступна только админу
+### =========================
+
+### 3.1 Получить историю - ожидаем 200 и history
+GET http://localhost:8080/history
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+
+### 3.2 Попытка получить историю обычным пользаком - ожидаем 403
+GET http://localhost:8080/history
+Authorization: Bearer {{USER_TOKEN}}
+
+
+### 3.3 Попытка без токена - ожидаем 307 Redirect на Keycloak
+GET http://localhost:8080/history
+
+
+### 3.4 Удалить историю admin - ожидаем 204
+DELETE http://localhost:8080/history
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+
+### =========================
+### 4. Статистика
+### =========================
+
+### 4.1 Получить статистику из-под обычного пользака
+GET http://localhost:8080/stats
+Authorization: Bearer {{USER_TOKEN}}
+
+
+### 4.2 Получить статистику из-под админа
+GET http://localhost:8080/stats
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+
+### =========================
+### 5. Свагер доекументация - доступна только админу
+### =========================
+
+### 5.1 Доступ к /docs как admin - ожидаем 200 с HTML
+GET http://localhost:8080/docs
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+
+### 5.2 Доступ к /docs как обычный пользователь - ожидаем 403
+GET http://localhost:8080/docs
+Authorization: Bearer {{USER_TOKEN}}
+
+
+### 5.3 Доступ к /docs без токена - ожидаем 307 Redirect на Keycloak
+GET http://localhost:8080/docs
+
+### 6 Еще запросы
+### 6.1
+POST http://localhost:8080/forward
+Authorization: Bearer {{ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+  "message": "I have been feeling really low for weeks. I can barely get out of bed, nothing makes me happy anymore and I keep thinking that everyone would be better off without me. I know I should talk to someone but I feel ashamed and stuck and it is getting worse every day."
+}
+
+### 6.2
+POST http://localhost:8080/forward
+Authorization: Bearer {{ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+  "message": "I have been feeling down for a long time now. Every morning I wake up feeling heavy and tired, even if I slept for many hours. I used to enjoy playing games with my friends but lately I just ignore their messages. I keep thinking that there is something wrong with me and that I am a burden to everyone."
+}
